@@ -3595,7 +3595,7 @@
     "queue": {
       "get-next": {
         "endpoint": "GetQueueItemsNext",
-        "params": "lambda args: {'itemCount': args.count or 3}",
+        "params": "lambda args: {'bridgeCredential': args.bridge_credential, 'itemCount': args.item_count}",
         "help": {
           "description": "Get next queue items for processing",
           "details": "Retrieves and assigns the next available queue items to the caller. Used by bridges to fetch work. Items are automatically marked as ASSIGNED.",
@@ -3604,19 +3604,20 @@
               "description": "Number of items to retrieve (default: 3)",
               "required": false,
               "example": "5"
+            },
+            "bridge_credential": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "item_count": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
             }
           },
-          "examples": [
-            {
-              "command": "rediacc queue get-next",
-              "description": "Get next 3 items (default)"
-            },
-            {
-              "command": "rediacc queue get-next --count 10",
-              "description": "Get up to 10 items"
-            }
-          ],
-          "notes": "Designed for bridges. Items are assigned to caller's identity. Returns empty array if no items available.",
           "rules": [
             "Requires bridge or administrative authentication",
             "Returns only PENDING items from accessible teams",
