@@ -5,8 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "rediacc"
 dynamic = ["version"]
-description = "Infrastructure protection platform with 100-second recovery. Instant cloning, time-travel recovery, and 99.99% storage reduction for disaster prevention."
-readme = "README_PYPI.md"
+description = "CLI for Rediacc infrastructure protection platform"
 license = {text = "MIT"}
 authors = [
     {name = "Rediacc Team", email = "info@rediacc.com"}
@@ -58,8 +57,8 @@ classifiers = [
 [project.urls]
 Homepage = "https://rediacc.com"
 Documentation = "https://www.rediacc.com/docs"
-Repository = "https://github.com/rediacc/cli"
-"Bug Tracker" = "https://github.com/rediacc/cli/issues"
+Repository = "https://github.com/rediacc/desktop"
+"Bug Tracker" = "https://github.com/rediacc/desktop/issues"
 
 [project.optional-dependencies]
 # Note: GUI support requires tkinter which is part of Python standard library
