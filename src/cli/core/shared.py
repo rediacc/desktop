@@ -112,6 +112,7 @@ def safe_error_message(message: str) -> str:
 INTERIM_FOLDER_NAME = 'interim'
 MOUNTS_FOLDER_NAME = 'mounts'
 REPOS_FOLDER_NAME = 'repos'
+IMMOVABLE_FOLDER_NAME = 'immovable'
 
 COLORS = {
     'HEADER': '\033[95m', 
@@ -906,6 +907,7 @@ def get_repository_paths(repo_guid: str, datastore: str, universal_user_id: str,
     paths = {
         'mount_path': f"{base_path}/{MOUNTS_FOLDER_NAME}/{repo_guid}",
         'image_path': f"{base_path}/{REPOS_FOLDER_NAME}/{repo_guid}",
+        'immovable_path': f"{base_path}/{IMMOVABLE_FOLDER_NAME}/{repo_guid}",
         'docker_folder': docker_base,
         'docker_socket': runtime_paths['docker_socket'],
         'docker_data': f"{docker_base}/data",

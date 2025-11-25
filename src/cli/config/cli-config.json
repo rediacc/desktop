@@ -4559,6 +4559,20 @@
             }
           }
         }
+      },
+      "update-user-to-activated": {
+        "endpoint": "UpdateUserToActivated",
+        "params": "lambda args: {'userEmail': args.user_email}",
+        "help": {
+          "parameters": {
+            "user_email": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
       }
     },
     "team": {

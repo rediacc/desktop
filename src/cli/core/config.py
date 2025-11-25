@@ -1714,7 +1714,9 @@ class TerminalDetector:
 
     def _test_xfce4_terminal(self) -> Tuple[bool, str]:
         """Test XFCE4 Terminal"""
-        cmd = ['xfce4-terminal', '-e', 'bash TEST_SCRIPT']
+        # Use -x instead of -e: -x takes remaining args as command (like xterm -e)
+        # while -e expects a single string which causes quoting issues
+        cmd = ['xfce4-terminal', '-x', 'bash', 'TEST_SCRIPT']
         # Linux terminals spawn window and exit immediately - this is normal
         return self._test_command(cmd, expect_running=False)
 
@@ -2225,8 +2227,9 @@ class TerminalDetector:
         """Launch using XFCE4 Terminal"""
         env_exports = self._get_env_exports()
         cmd_str = f'{env_exports}cd {cli_dir} && ./rediacc {command}'
-        # Launch maximized
-        subprocess.Popen(['xfce4-terminal', '--maximize', '-e', f'bash -c "{cmd_str}"'], env=_clean_environment())
+        # Launch maximized using -x instead of -e
+        # -x takes remaining args as command (like xterm -e), avoiding quoting issues
+        subprocess.Popen(['xfce4-terminal', '--maximize', '-x', 'bash', '-c', cmd_str], env=_clean_environment())
     
     def _launch_mate_terminal(self, cli_dir: str, command: str, description: str):
         """Launch using MATE Terminal"""

@@ -73,6 +73,7 @@ def get_repository_environment(
         'DOCKER_SOCKET': docker_socket,
         'DOCKER_DATA': repo_paths['docker_data'],
         'DOCKER_EXEC': repo_paths['docker_exec'],
+        'REDIACC_IMMOVABLE': repo_paths['immovable_path'],
         'REPO_LOOPBACK_IP': repo_loopback_ip,
         'REPO_NETWORK_MODE': repo_network_mode,
         'REPO_TAG': repo_tag,
