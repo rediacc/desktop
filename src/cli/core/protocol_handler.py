@@ -776,9 +776,11 @@ def handle_protocol_url(url: str, is_protocol_call: bool = False) -> int:
                     # Called from browser without terminal - launch in new terminal window
                     try:
                         from .config import TerminalDetector, get_cli_root
+                        import shlex
 
-                        # Build the rediacc command
-                        rediacc_cmd = ' '.join(cmd_args)
+                        # Build the rediacc command with proper quoting for shell
+                        # Arguments with spaces (like team names) need to be quoted
+                        rediacc_cmd = ' '.join(shlex.quote(arg) for arg in cmd_args)
                         logger.info(f"Launching terminal for command: {rediacc_cmd}")
 
                         # Detect best terminal

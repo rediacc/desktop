@@ -2201,10 +2201,76 @@ class TerminalDetector:
         # Launch maximized
         subprocess.Popen(['cmd.exe', '/c', f'start /max cmd /c {cmd_str}'], env=_clean_environment())
     
+    def _get_rediacc_command(self, cli_dir: str, command: str) -> str:
+        """Get the best rediacc invocation command with fallback logic.
+
+        This method finds the most reliable way to invoke rediacc on Unix-like systems
+        (Linux and macOS), with proper fallback logic similar to Windows implementation.
+
+        Priority order:
+        1. Installed 'rediacc' in PATH (pip-installed)
+        2. Local development script at cli_dir parent (./rediacc)
+        3. Direct Python module invocation (python -m cli.commands.cli_main)
+
+        Args:
+            cli_dir: The CLI root directory
+            command: The rediacc subcommand and arguments (e.g., "term --token xyz")
+
+        Returns:
+            A shell command string that invokes rediacc with the given command
+        """
+        import shutil
+
+        # 1) Check for pip-installed rediacc in PATH
+        rediacc_in_path = shutil.which('rediacc')
+        if rediacc_in_path:
+            self.logger.debug(f"Using rediacc from PATH: {rediacc_in_path}")
+            return f'"{rediacc_in_path}" {command}'
+
+        # 2) Check for local development script (in parent of cli_dir, i.e., repo root)
+        repo_root = os.path.dirname(cli_dir)  # cli_dir is typically /path/to/repo/src
+        local_rediacc = os.path.join(repo_root, 'rediacc')
+        if os.path.exists(local_rediacc) and os.access(local_rediacc, os.X_OK):
+            self.logger.debug(f"Using local development rediacc: {local_rediacc}")
+            return f'cd "{repo_root}" && ./rediacc {command}'
+
+        # Also check in cli_dir itself (in case structure is different)
+        local_rediacc_in_cli = os.path.join(cli_dir, 'rediacc')
+        if os.path.exists(local_rediacc_in_cli) and os.access(local_rediacc_in_cli, os.X_OK):
+            self.logger.debug(f"Using local rediacc in cli_dir: {local_rediacc_in_cli}")
+            return f'cd "{cli_dir}" && ./rediacc {command}'
+
+        # 3) Fall back to Python module invocation
+        # This works for both pip-installed packages and development setups
+        python_exe = sys.executable
+        self.logger.debug(f"Falling back to module invocation with: {python_exe}")
+
+        # Map subcommands to their module paths
+        cmd_parts = command.split(None, 1)  # Split into command and rest
+        subcommand = cmd_parts[0] if cmd_parts else ''
+        rest_args = cmd_parts[1] if len(cmd_parts) > 1 else ''
+
+        module_map = {
+            'term': 'cli.commands.term_main',
+            'sync': 'cli.commands.sync_main',
+            'vscode': 'cli.commands.vscode_main',
+            'protocol': 'cli.commands.protocol_main',
+        }
+
+        module = module_map.get(subcommand, 'cli.commands.cli_main')
+
+        if subcommand in module_map:
+            # Use specific module for known subcommands
+            return f'"{python_exe}" -m {module} {rest_args}'
+        else:
+            # Use main CLI module for unknown commands
+            return f'"{python_exe}" -m cli.commands.cli_main {command}'
+
     def _launch_macos_terminal(self, cli_dir: str, command: str, description: str):
         """Launch using macOS Terminal.app"""
         env_exports = self._get_env_exports()
-        cmd_str = f'{env_exports}cd {cli_dir} && ./rediacc {command}'
+        rediacc_cmd = self._get_rediacc_command(cli_dir, command)
+        cmd_str = f'{env_exports}{rediacc_cmd}'
         # Launch Terminal.app (maximizing is handled by macOS Window Manager)
         # Note: Terminal.app doesn't have a direct maximize flag
         subprocess.Popen(['open', '-a', 'Terminal', '--', 'bash', '-c', cmd_str], env=_clean_environment())
@@ -2212,21 +2278,24 @@ class TerminalDetector:
     def _launch_gnome_terminal(self, cli_dir: str, command: str, description: str):
         """Launch using GNOME Terminal"""
         env_exports = self._get_env_exports()
-        cmd_str = f'{env_exports}cd {cli_dir} && ./rediacc {command}'
+        rediacc_cmd = self._get_rediacc_command(cli_dir, command)
+        cmd_str = f'{env_exports}{rediacc_cmd}'
         # Launch maximized
         subprocess.Popen(['gnome-terminal', '--maximize', '--', 'bash', '-c', cmd_str], env=_clean_environment())
     
     def _launch_konsole(self, cli_dir: str, command: str, description: str):
         """Launch using KDE Konsole"""
         env_exports = self._get_env_exports()
-        cmd_str = f'{env_exports}cd {cli_dir} && ./rediacc {command}'
+        rediacc_cmd = self._get_rediacc_command(cli_dir, command)
+        cmd_str = f'{env_exports}{rediacc_cmd}'
         # Launch maximized
         subprocess.Popen(['konsole', '--fullscreen', '-e', 'bash', '-c', cmd_str], env=_clean_environment())
     
     def _launch_xfce4_terminal(self, cli_dir: str, command: str, description: str):
         """Launch using XFCE4 Terminal"""
         env_exports = self._get_env_exports()
-        cmd_str = f'{env_exports}cd {cli_dir} && ./rediacc {command}'
+        rediacc_cmd = self._get_rediacc_command(cli_dir, command)
+        cmd_str = f'{env_exports}{rediacc_cmd}'
         # Launch maximized using -x instead of -e
         # -x takes remaining args as command (like xterm -e), avoiding quoting issues
         subprocess.Popen(['xfce4-terminal', '--maximize', '-x', 'bash', '-c', cmd_str], env=_clean_environment())
@@ -2234,21 +2303,24 @@ class TerminalDetector:
     def _launch_mate_terminal(self, cli_dir: str, command: str, description: str):
         """Launch using MATE Terminal"""
         env_exports = self._get_env_exports()
-        cmd_str = f'{env_exports}cd {cli_dir} && ./rediacc {command}'
+        rediacc_cmd = self._get_rediacc_command(cli_dir, command)
+        cmd_str = f'{env_exports}{rediacc_cmd}'
         # Launch maximized
         subprocess.Popen(['mate-terminal', '--maximize', '-e', f'bash -c "{cmd_str}"'], env=_clean_environment())
     
     def _launch_terminator(self, cli_dir: str, command: str, description: str):
         """Launch using Terminator"""
         env_exports = self._get_env_exports()
-        cmd_str = f'{env_exports}cd {cli_dir} && ./rediacc {command}'
+        rediacc_cmd = self._get_rediacc_command(cli_dir, command)
+        cmd_str = f'{env_exports}{rediacc_cmd}'
         # Launch maximized
         subprocess.Popen(['terminator', '--maximise', '-e', f'bash -c "{cmd_str}"'], env=_clean_environment())
     
     def _launch_xterm(self, cli_dir: str, command: str, description: str):
         """Launch using XTerm"""
         env_exports = self._get_env_exports()
-        cmd_str = f'{env_exports}cd {cli_dir} && ./rediacc {command}'
+        rediacc_cmd = self._get_rediacc_command(cli_dir, command)
+        cmd_str = f'{env_exports}{rediacc_cmd}'
         # Launch maximized with geometry
         subprocess.Popen(['xterm', '-maximized', '-e', 'bash', '-c', cmd_str], env=_clean_environment())
 
