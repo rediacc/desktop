@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Build script for preparing Rediacc CLI for PyPI distribution.
+Build script for preparing Rediacc CLI distribution packages.
 
 This script:
 1. Updates version numbers (can extract from git tags)
-2. Builds the distribution packages
+2. Builds the distribution packages (wheel and sdist)
 3. Validates the package
-4. Optionally uploads to TestPyPI or PyPI
+
+Packages are served from the nginx image at /pypi/ endpoint.
 """
 
 import argparse
@@ -238,84 +239,9 @@ def validate_package(base_dir):
     print("✓ Package validation passed")
     return True
 
-def upload_package(base_dir, repository="testpypi", token=None):
-    """Upload the package to PyPI or TestPyPI."""
-    print(f"\n🚀 Uploading to {repository}...")
-
-    # Get all files in dist directory
-    import glob
-    dist_files = glob.glob(str(base_dir / "dist" / "*"))
-    if not dist_files:
-        print("✗ No distribution files found in dist/")
-        return False
-
-    # Try to use the virtual environment if it exists
-    venv_dir = base_dir / ".build_venv"
-    venv_python = venv_dir / "bin" / "python" if os.name != 'nt' else venv_dir / "Scripts" / "python.exe"
-
-    # Check if venv exists and has pip
-    use_venv = False
-    python_cmd = [sys.executable]
-
-    if venv_python.exists():
-        # Check if pip works in the venv
-        pip_check = subprocess.run([str(venv_python), "-m", "pip", "--version"], capture_output=True)
-        if pip_check.returncode == 0:
-            use_venv = True
-            # Ensure twine is installed in the virtual environment
-            subprocess.run([str(venv_python), "-m", "pip", "install", "--quiet", "twine==6.0.1"], check=True)
-            python_cmd = [str(venv_python)]
-
-    if not use_venv:
-        # Fall back to system Python with --break-system-packages
-        subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "--upgrade", "--break-system-packages", "twine==6.0.1"], check=False)
-        python_cmd = [sys.executable]
-
-    # Set up environment for twine
-    env = os.environ.copy()
-    if token:
-        env['TWINE_USERNAME'] = '__token__'
-        env['TWINE_PASSWORD'] = token
-
-    cmd = python_cmd + ["-m", "twine", "upload"]
-    
-    if repository == "testpypi":
-        cmd.extend(["--repository", "testpypi"])
-    
-    # Add the actual file paths
-    cmd.extend(dist_files)
-    
-    result = subprocess.run(
-        cmd,
-        env=env,
-        capture_output=True,
-        text=True
-    )
-    
-    if result.returncode != 0:
-        print(f"✗ Upload failed:")
-        if result.stdout:
-            print(f"STDOUT:\n{result.stdout}")
-        if result.stderr:
-            print(f"STDERR:\n{result.stderr}")
-        return False
-    
-    print(f"✓ Successfully uploaded to {repository}")
-    
-    if repository == "testpypi":
-        print("\n📋 To install from TestPyPI:")
-        print("pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ rediacc")
-    else:
-        print("\n📋 To install from PyPI:")
-        print("pip install rediacc")
-    
-    return True
-
 def main():
-    parser = argparse.ArgumentParser(description="Build and publish Rediacc CLI to PyPI")
+    parser = argparse.ArgumentParser(description="Build Rediacc CLI distribution packages")
     parser.add_argument("version", nargs="?", help="Version number (e.g., 0.1.0, v0.1.0, or 'auto' for git tag)")
-    parser.add_argument("--upload", choices=["testpypi", "pypi"], help="Upload to PyPI or TestPyPI")
-    parser.add_argument("--token", help="PyPI API token for upload")
     parser.add_argument("--skip-clean", action="store_true", help="Skip cleaning build directories")
     parser.add_argument("--skip-validation", action="store_true", help="Skip package validation")
     parser.add_argument("--increment", choices=["major", "minor", "patch"], default="patch",
@@ -372,20 +298,7 @@ def main():
         if not validate_package(base_dir):
             print("\n❌ Validation failed!")
             sys.exit(1)
-    
-    # Step 5: Upload if requested
-    if args.upload:
-        if not args.token and not os.environ.get("TWINE_PASSWORD"):
-            print("\n⚠️  No API token provided. Use --token or set TWINE_PASSWORD environment variable")
-            print("Get your token from:")
-            print("  - TestPyPI: https://test.pypi.org/manage/account/token/")
-            print("  - PyPI: https://pypi.org/manage/account/token/")
-            sys.exit(1)
-        
-        if not upload_package(base_dir, args.upload, args.token):
-            print("\n❌ Upload failed!")
-            sys.exit(1)
-    
+
     print("\n✅ Build complete!")
     
     # Show the built files
