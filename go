@@ -170,13 +170,7 @@ function host_setup() {
         curl \
         jq \
         git
-    
-    echo "Installing PyPI publishing tools..."
-    # Install specific versions to support PEP 639 metadata (License-Expression, License-File)
-    # - packaging>=24.1 required for PEP 639 support (metadata version 2.4)
-    # - twine 6.0.1 is compatible with PEP 639
-    sudo pip3 install twine==6.0.1 "packaging>=24.1"
-    
+
     # Only install Docker in native environments
     if [ "$is_codespace" = false ]; then
         if ! command -v docker &> /dev/null; then
