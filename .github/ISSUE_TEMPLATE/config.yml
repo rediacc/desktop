@@ -5,10 +5,10 @@ contact_links:
     url: https://discord.gg/rediacc
     about: Join our Discord for community support and discussions
   - name: Documentation
-    url: https://github.com/rediacc/cli/tree/main/docs
+    url: https://github.com/rediacc/desktop/tree/main/docs
     about: Check our comprehensive documentation first
   - name: Troubleshooting Guide
-    url: https://github.com/rediacc/cli/blob/main/docs/guides/TROUBLESHOOTING.md
+    url: https://github.com/rediacc/desktop/blob/main/docs/guides/TROUBLESHOOTING.md
     about: Common issues and their solutions
   - name: Security Vulnerability
     url: mailto:security@rediacc.com

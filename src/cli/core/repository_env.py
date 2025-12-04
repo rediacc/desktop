@@ -54,9 +54,9 @@ def get_repository_environment(
     docker_host = f"unix://{docker_socket}"
     repo_mount_path = repo_paths['mount_path']
 
-    # Get repository loopback IP (defaults to 0.0.0.0 if not present)
-    # Note: API returns 'repoLoopbackIP' (with uppercase IP)
-    repo_loopback_ip = repo_info.get('repoLoopbackIP', '0.0.0.0') if repo_info else '0.0.0.0'
+    # Get repository network ID (defaults to 0 if not present)
+    # Note: API returns 'repoNetworkId' as an integer
+    repo_network_id = repo_info.get('repoNetworkId', 0) if repo_info else 0
 
     # Get repository network mode (defaults to bridge if not present)
     # Valid modes: bridge, host, none, overlay, ipvlan, macvlan
@@ -74,7 +74,7 @@ def get_repository_environment(
         'DOCKER_DATA': repo_paths['docker_data'],
         'DOCKER_EXEC': repo_paths['docker_exec'],
         'REDIACC_IMMOVABLE': repo_paths['immovable_path'],
-        'REPO_LOOPBACK_IP': repo_loopback_ip,
+        'REPO_NETWORK_ID': str(repo_network_id),
         'REPO_NETWORK_MODE': repo_network_mode,
         'REPO_TAG': repo_tag,
         'REDIACC_REPO': repo,
