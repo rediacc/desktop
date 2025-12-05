@@ -4603,6 +4603,40 @@
           }
         }
       }
+    },
+    "repository": {
+      "update-repository-tag": {
+        "endpoint": "UpdateRepositoryTag",
+        "params": "lambda args: {'teamName': args.team, 'repoName': args.repo_name, 'currentTag': args.current_tag, 'newTag': args.new_tag}",
+        "help": {
+          "parameters": {
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "repo_name": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "current_tag": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "new_tag": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      }
     }
   },
   "CLI_COMMANDS": {
