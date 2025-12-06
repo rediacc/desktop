@@ -1,9 +1,0 @@
-# This test extends community/01000_company.yaml
-# It only overrides what's different - adding PRO plan
-description: "Create company with Pro subscription plan"
-
-tests:
-  - name: "create_new_company"
-    args:
-      plan: "PRO"
-

@@ -287,7 +287,7 @@
             "vault": {
               "description": "JSON with machine config (ip, user, ssh_port, datastore)",
               "required": false,
-              "example": "{\"ip\": \"10.0.0.5\", \"user\": \"rediacc\", \"datastore\": \"/mnt/datastore\"}"
+              "example": "{\"ip\": \"10.0.0.5\", \"user\": \"rediacc\", \"datastore\": \"/mnt/rediacc\"}"
             },
             "machine": {
               "description": "",
@@ -439,66 +439,6 @@
             "Storage names are case-sensitive",
             "Credentials in vault are automatically encrypted",
             "Storage types must be supported (S3, Azure, GCS, SFTP, SMB)"
-          ]
-        }
-      },
-      "queue-item": {
-        "endpoint": "CreateQueueItem",
-        "params": "lambda args: {'teamName': args.team, 'machineName': args.machine, 'bridgeName': args.bridge, 'queueVault': get_vault_data(args) or '{}', 'priority': args.priority}",
-        "success_msg": "Successfully created queue item for machine {machine} with priority {priority}",
-        "help": {
-          "description": "Create a queue item for task execution",
-          "details": "Queue items represent tasks to be executed on machines by bridges. The bridge polls for items, executes them on the target machine via SSH, and reports results back.",
-          "parameters": {
-            "team": {
-              "description": "Team that owns the machine",
-              "required": true,
-              "example": "production-team"
-            },
-            "machine": {
-              "description": "Target machine for execution",
-              "required": true,
-              "example": "web-server-01"
-            },
-            "bridge": {
-              "description": "Bridge to process this queue item",
-              "required": true,
-              "example": "us-east-bridge-01"
-            },
-            "vault": {
-              "description": "JSON with task configuration and parameters",
-              "required": false,
-              "example": "{\"function\": \"deploy\", \"version\": \"1.2.3\"}"
-            },
-            "priority": {
-              "description": "Priority level (1=highest, 5=lowest)",
-              "required": false,
-              "default": "3",
-              "example": "1"
-            }
-          },
-          "examples": [
-            {
-              "command": "rediacc create queue-item prod web-01 us-bridge --priority 3",
-              "description": "Create standard priority queue item"
-            },
-            {
-              "command": "rediacc create queue-item prod db-01 bridge-01 --priority 1 --vault-file task.json",
-              "description": "Create high priority item with task config"
-            }
-          ],
-          "notes": "Priority 1-2 requires Business/Enterprise subscription. Community/Pro limited to priority 3-5. You must be a team member.",
-          "rules": [
-            "Priority must be between 1 and 5 (1=highest, 5=lowest)",
-            "Priority levels 1-2 require Business or Enterprise subscription",
-            "Community/Pro plans automatically reset priority to 4 (default)",
-            "User must be a member of the team that owns the machine",
-            "Machine must exist and belong to the specified team",
-            "Bridge must exist and be accessible",
-            "Machine can be optional for bridge-only queue items",
-            "Queue vault data must be valid JSON format",
-            "Task execution is subject to subscription concurrency limits",
-            "Bridge must be in the same company as the machine"
           ]
         }
       }
@@ -1405,52 +1345,6 @@
             "Storage deletion is tracked in audit logs"
           ]
         }
-      },
-      "queue-item": {
-        "endpoint": "DeleteQueueItem",
-        "params": "lambda args: {'taskId': args.task_id}",
-        "confirm_msg": "Are you sure you want to delete queue item '{task_id}'?",
-        "success_msg": "Successfully deleted queue item: {task_id}",
-        "help": {
-          "description": "Delete a queue item from the system",
-          "details": "Removes a pending queue item to prevent execution. Only PENDING or CANCELLED items can be deleted. Running or completed items cannot be removed for audit purposes.",
-          "parameters": {
-            "taskid": {
-              "help": "Task ID of the queue item to delete",
-              "required": true,
-              "positional": true
-            },
-            "task_id": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          },
-          "examples": [
-            {
-              "command": "rediacc rm queue-item 550e8400-e29b-41d4-a716-446655440000",
-              "description": "Delete queue item with confirmation"
-            },
-            {
-              "command": "rediacc rm queue-item 550e8400 --force",
-              "description": "Force delete using partial task ID"
-            }
-          ],
-          "notes": "Cannot delete running or completed items. Use 'queue cancel' for running tasks. Deletion is immediate and permanent.",
-          "rules": [
-            "User must be authenticated to perform this operation",
-            "User must have access to the team that created the queue item",
-            "Queue item must exist with the specified task ID",
-            "Can only delete items in PENDING or CANCELLED states",
-            "Cannot delete items in ASSIGNED or PROCESSING states",
-            "Cannot delete COMPLETED or FAILED items (kept for audit)",
-            "Deletion prevents the task from being executed",
-            "Associated queue vault data will be removed",
-            "Operation is permanent and cannot be undone",
-            "Queue item deletion is tracked in audit logs"
-          ]
-        }
       }
     },
     "bridge": {
@@ -1537,7 +1431,7 @@
       "team": {
         "endpoint": "UpdateTeamName",
         "params": "lambda args: {'currentTeamName': args.current_team_name, 'newTeamName': args.new_name}",
-        "success_msg": "Successfully updated team name: {name} → {new_name}",
+        "success_msg": "Successfully updated team name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a team",
           "details": "Changes the name of an existing team. All resources remain associated with the team. References in scripts and configurations must be updated manually.",
@@ -1570,7 +1464,7 @@
       "region": {
         "endpoint": "UpdateRegionName",
         "params": "lambda args: {'currentRegionName': args.current_region_name, 'newRegionName': args.new_name}",
-        "success_msg": "Successfully updated region name: {name} → {new_name}",
+        "success_msg": "Successfully updated region name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a region",
           "details": "Changes the name of an existing region. All bridges within the region remain associated. Update any scripts or configurations that reference the old name.",
@@ -1603,7 +1497,7 @@
       "bridge": {
         "endpoint": "UpdateBridgeName",
         "params": "lambda args: {'regionName': args.region, 'currentBridgeName': args.current_bridge_name, 'newBridgeName': args.new_name}",
-        "success_msg": "Successfully updated bridge name: {name} → {new_name}",
+        "success_msg": "Successfully updated bridge name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a bridge",
           "details": "Changes the name of an existing bridge within a region. Machine assignments remain unchanged. Running bridge processes are not affected.",
@@ -1641,7 +1535,7 @@
       "machine": {
         "endpoint": "UpdateMachineName",
         "params": "lambda args: {'teamName': args.team, 'currentMachineName': args.current_machine_name, 'newMachineName': args.new_name}",
-        "success_msg": "Successfully updated machine name: {name} → {new_name}",
+        "success_msg": "Successfully updated machine name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a machine",
           "details": "Changes the name of an existing machine. The new name must be unique across the entire company. Active queue items continue processing.",
@@ -1679,7 +1573,7 @@
       "machine-bridge": {
         "endpoint": "UpdateMachineAssignedBridge",
         "params": "lambda args: {'teamName': args.team, 'machineName': args.name, 'newBridgeName': args.new_bridge}",
-        "success_msg": "Successfully updated machine bridge: {name} → {new_bridge}",
+        "success_msg": "Successfully updated machine bridge: {name} \u2192 {new_bridge}",
         "help": {
           "description": "Reassign a machine to a different bridge",
           "details": "Changes which bridge processes queue items for a machine. Useful for load balancing, maintenance, or moving machines between regions. Pending queue items remain with the original bridge.",
@@ -1742,7 +1636,7 @@
       "repository": {
         "endpoint": "UpdateRepositoryName",
         "params": "lambda args: {'teamName': args.team, 'currentRepoName': args.current_repo_name, 'newRepoName': args.new_name}",
-        "success_msg": "Successfully updated repository name: {name} → {new_name}",
+        "success_msg": "Successfully updated repository name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a repository",
           "details": "Changes the name of an existing repository within a team. Repository data and configurations are preserved. Update deployment scripts that reference the old name.",
@@ -1831,7 +1725,7 @@
       "storage": {
         "endpoint": "UpdateStorageName",
         "params": "lambda args: {'teamName': args.team, 'currentStorageName': args.current_storage_name, 'newStorageName': args.new_name}",
-        "success_msg": "Successfully updated storage name: {name} → {new_name}",
+        "success_msg": "Successfully updated storage name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a storage resource",
           "details": "Changes the name of an existing storage configuration. The actual storage backend (S3 bucket, Azure container, etc.) is not affected.",
@@ -3347,7 +3241,7 @@
       "update-email": {
         "endpoint": "UpdateUserEmail",
         "params": "lambda args: {'currentUserEmail': args.current_email, 'newUserEmail': args.new_email}",
-        "success_msg": "Successfully updated user email: {current_email} → {new_email}",
+        "success_msg": "Successfully updated user email: {current_email} \u2192 {new_email}",
         "help": {
           "description": "Change a user's email address",
           "details": "Updates a user's email address across the system. The new email becomes the login identifier. All permissions and data are preserved.",
@@ -5933,198 +5827,6 @@
       ]
     }
   },
-  "QUEUE_FUNCTIONS": {
-    "os_setup": {
-      "description": "Setup operating system with required tools and configurations",
-      "params": {
-        "datastore_size": {
-          "type": "string",
-          "default": "95%",
-          "help": "Datastore size (e.g., 95%, 100G)"
-        },
-        "source": {
-          "type": "string",
-          "default": "apt-repo",
-          "help": "Package source"
-        }
-      }
-    },
-    "hello": {
-      "description": "Simple test function that prints hello from hostname",
-      "params": {}
-    },
-    "uninstall": {
-      "description": "Cleanup and uninstall system components",
-      "params": {}
-    },
-    "repo_new": {
-      "description": "Create a new repository",
-      "params": {
-        "repo": {
-          "type": "string",
-          "required": true,
-          "help": "Repository name"
-        },
-        "size": {
-          "type": "string",
-          "required": true,
-          "help": "Repository size (e.g., 10G)"
-        }
-      }
-    },
-    "repo_mount": {
-      "description": "Mount repository filesystems",
-      "params": {
-        "repo": {
-          "type": "string",
-          "required": true,
-          "help": "Repository name(s), comma-separated"
-        },
-        "from": {
-          "type": "string",
-          "help": "Remote machine to mount from"
-        }
-      }
-    },
-    "repo_unmount": {
-      "description": "Unmount repository filesystems",
-      "params": {
-        "repo": {
-          "type": "string",
-          "required": true,
-          "help": "Repository name(s), comma-separated"
-        },
-        "from": {
-          "type": "string",
-          "help": "Remote machine to unmount from"
-        }
-      }
-    },
-    "repo_up": {
-      "description": "Start repository services using Rediaccfile",
-      "params": {
-        "repo": {
-          "type": "string",
-          "required": true,
-          "help": "Repository name(s), comma-separated"
-        },
-        "option": {
-          "type": "string",
-          "help": "Options (e.g., prep-only)"
-        }
-      }
-    },
-    "repo_down": {
-      "description": "Stop repository services",
-      "params": {
-        "repo": {
-          "type": "string",
-          "required": true,
-          "help": "Repository name(s), comma-separated"
-        }
-      }
-    },
-    "repo_resize": {
-      "description": "Resize repository storage",
-      "params": {
-        "repo": {
-          "type": "string",
-          "required": true,
-          "help": "Repository name"
-        },
-        "size": {
-          "type": "string",
-          "required": true,
-          "help": "New size (e.g., 20G)"
-        }
-      }
-    },
-    "repo_rm": {
-      "description": "Delete repository",
-      "params": {
-        "repo": {
-          "type": "string",
-          "required": true,
-          "help": "Repository name"
-        }
-      }
-    },
-    "repo_ownership": {
-      "description": "Change repository ownership",
-      "params": {
-        "repo": {
-          "type": "string",
-          "required": true,
-          "help": "Repository name"
-        },
-        "from": {
-          "type": "string",
-          "required": true,
-          "help": "Current owner"
-        },
-        "to": {
-          "type": "string",
-          "help": "New owner (default: universal user)"
-        }
-      }
-    },
-    "list_system": {
-      "description": "List repositories",
-      "params": {
-        "kind": {
-          "type": "string",
-          "default": "repo",
-          "help": "Type to list"
-        },
-        "format": {
-          "type": "string",
-          "help": "Output format (json)"
-        }
-      }
-    },
-    "repo_push": {
-      "description": "Push repository to remote storage",
-      "params": {
-        "repo": {
-          "type": "string",
-          "required": true,
-          "help": "Repository name(s), comma-separated"
-        },
-        "dest": {
-          "type": "string",
-          "required": true,
-          "help": "Destination filename"
-        },
-        "to": {
-          "type": "string",
-          "help": "Destination machine/storage"
-        },
-        "state": {
-          "type": "string",
-          "help": "Required repository state (online/offline)"
-        },
-        "option": {
-          "type": "string",
-          "help": "Options (e.g., override)"
-        }
-      }
-    },
-    "repo_pull": {
-      "description": "Pull repository from remote storage",
-      "params": {
-        "from": {
-          "type": "string",
-          "required": true,
-          "help": "Source machine/storage"
-        },
-        "repo": {
-          "type": "string",
-          "required": true,
-          "help": "Repository name(s), comma-separated"
-        }
-      }
-    }
-  },
   "METADATA": {
     "version": "2.0.0",
     "reorganized": "2025-01-15T00:00:00Z",
@@ -6138,11 +5840,6 @@
       },
       "CLI_COMMANDS": {
         "description": "Manually defined CLI commands with their complete configuration",
-        "source": "manual configuration",
-        "modification_allowed": true
-      },
-      "QUEUE_FUNCTIONS": {
-        "description": "Queue function definitions for bash script operations",
         "source": "manual configuration",
         "modification_allowed": true
       }

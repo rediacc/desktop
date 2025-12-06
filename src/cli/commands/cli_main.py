@@ -52,7 +52,6 @@ CLI_CONFIG_PATH = CLI_CONFIG_FILE
 try:
     with open(CLI_CONFIG_PATH, 'r', encoding='utf-8') as f:
         cli_config = json.load(f)
-        QUEUE_FUNCTIONS = cli_config['QUEUE_FUNCTIONS']
         API_ENDPOINTS_JSON = cli_config['API_ENDPOINTS']
         CLI_COMMANDS_JSON = cli_config['CLI_COMMANDS']
 except Exception as e:
@@ -482,7 +481,7 @@ class CommandHandler:
                     "UpdateTeamVault", 
                     {
                         "teamName": team_name,
-                        "teamVault": vault_data,
+                        "vaultContent": vault_data,
                         "vaultVersion": args.vault_version or 1
                     }
                 )
@@ -515,7 +514,7 @@ class CommandHandler:
                     "UpdateRegionVault", 
                     {
                         "regionName": region_name,
-                        "regionVault": vault_data,
+                        "vaultContent": vault_data,
                         "vaultVersion": args.vault_version or 1
                     }
                 )
@@ -553,7 +552,7 @@ class CommandHandler:
                     {
                         "regionName": args.region,
                         "bridgeName": bridge_name,
-                        "bridgeVault": vault_data,
+                        "vaultContent": vault_data,
                         "vaultVersion": args.vault_version or 1
                     }
                 )
@@ -613,7 +612,7 @@ class CommandHandler:
                     {
                         "teamName": team_name,
                         "machineName": machine_name,
-                        "machineVault": vault_data,
+                        "vaultContent": vault_data,
                         "vaultVersion": args.vault_version or 1
                     }
                 )
@@ -652,7 +651,7 @@ class CommandHandler:
                         "teamName": args.team,
                         "repoName": repo_name,
                         "repoTag": args.tag,
-                        "repoVault": vault_data,
+                        "vaultContent": vault_data,
                         "vaultVersion": args.vault_version or 1
                     }
                 )
@@ -690,7 +689,7 @@ class CommandHandler:
                     {
                         "teamName": args.team,
                         "storageName": storage_name,
-                        "storageVault": vault_data,
+                        "vaultContent": vault_data,
                         "vaultVersion": args.vault_version or 1
                     }
                 )
@@ -728,7 +727,7 @@ class CommandHandler:
                     {
                         "teamName": args.team,
                         "scheduleName": schedule_name,
-                        "scheduleVault": vault_data,
+                        "vaultContent": vault_data,
                         "vaultVersion": args.vault_version or 1
                     }
                 )
@@ -972,8 +971,8 @@ def setup_parser():
     # Add CLI commands from JSON configuration
     if 'CLI_COMMANDS' in cli_config:
         for cmd_name, cmd_def in cli_config['CLI_COMMANDS'].items():
-            # Skip license, workflow, queue, vault, and user - now have dedicated modules
-            if cmd_name in ('license', 'workflow', 'queue', 'vault', 'user'):
+            # Skip license, vault, and user - now have dedicated modules
+            if cmd_name in ('license', 'vault', 'user'):
                 continue
 
             # Only process commands with subcommands structure
@@ -1188,8 +1187,6 @@ def main():
             'vscode': ('cli.commands.vscode_main', 'VSCode'),
             'compose': ('cli.commands.compose_main', 'Compose'),
             'protocol': ('cli.commands.protocol_main', 'Protocol'),
-            'workflow': ('cli.commands.workflow_main', 'Workflow'),
-            'queue': ('cli.commands.queue_main', 'Queue'),
             'vault': ('cli.commands.vault_main', 'Vault'),
             'user': ('cli.commands.user_main', 'User'),
             'desktop': ('cli.gui.main', 'Desktop'),
@@ -1330,8 +1327,7 @@ def main():
 
     auth_not_required_commands = {
         ('user', 'activate'),
-        ('create', 'company'),
-        ('queue', 'list-functions')
+        ('create', 'company')
     }
     
     standalone_commands = ['bridge']

@@ -142,7 +142,7 @@
       "title": "When connected to machine only:",
       "points": [
         "- Automatically switches to universal user (e.g., rediacc)",
-        "- Changes to user's datastore directory (e.g., /mnt/datastore/7111)",
+        "- Changes to user's datastore directory (e.g., /mnt/rediacc)",
         "- Commands are executed in this context",
         "- Useful for managing repositories and datastore"
       ]

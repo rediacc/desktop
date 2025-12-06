@@ -1,2 +1,0 @@
-# This file ensures the test_results directory is preserved in Git
-# while actual test result JSON files are ignored

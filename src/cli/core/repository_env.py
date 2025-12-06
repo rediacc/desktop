@@ -115,14 +115,11 @@ def get_machine_environment(
         machine_info = get_machine_info_with_team(team, machine)
         connection_info = get_machine_connection_info(machine_info)
 
-    # Get universal user info
+    # Get universal user info (still needed for other purposes, but not for path construction)
     universal_user_name, universal_user_id, company_id = _get_universal_user_info()
 
-    # Calculate datastore path
-    if universal_user_id:
-        datastore_path = f"{connection_info['datastore']}/{universal_user_id}"
-    else:
-        datastore_path = connection_info['datastore']
+    # Datastore path is now direct (no user/company isolation)
+    datastore_path = connection_info['datastore']
 
     # Build environment variables dictionary
     env_vars = {

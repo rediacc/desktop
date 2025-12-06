@@ -178,14 +178,14 @@ def get_vault_set_params(args, config_manager=None):
     params = {'vaultVersion': args.vault_version or 1}
 
     resource_mappings = {
-        'team': {'teamName': args.name, 'teamVault': vault_data},
-        'machine': {'teamName': args.team, 'machineName': args.name, 'machineVault': vault_data},
-        'region': {'regionName': args.name, 'regionVault': vault_data},
-        'bridge': {'regionName': args.region, 'bridgeName': args.name, 'bridgeVault': vault_data},
-        'repository': {'teamName': args.team, 'repoName': args.name, 'repoTag': args.tag, 'repoVault': vault_data},
-        'storage': {'teamName': args.team, 'storageName': args.name, 'storageVault': vault_data},
-        'schedule': {'teamName': args.team, 'scheduleName': args.name, 'scheduleVault': vault_data},
-        'company': {'companyVault': vault_data}
+        'team': {'teamName': args.name, 'vaultContent': vault_data},
+        'machine': {'teamName': args.team, 'machineName': args.name, 'vaultContent': vault_data},
+        'region': {'regionName': args.name, 'vaultContent': vault_data},
+        'bridge': {'regionName': args.region, 'bridgeName': args.name, 'vaultContent': vault_data},
+        'repository': {'teamName': args.team, 'repoName': args.name, 'repoTag': args.tag, 'vaultContent': vault_data},
+        'storage': {'teamName': args.team, 'storageName': args.name, 'vaultContent': vault_data},
+        'schedule': {'teamName': args.team, 'scheduleName': args.name, 'vaultContent': vault_data},
+        'company': {'vaultContent': vault_data}
     }
 
     if args.resource_type in resource_mappings:

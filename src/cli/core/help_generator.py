@@ -109,7 +109,6 @@ def get_api_commands() -> List[Dict[str, str]]:
             'user': 'User account management',
             'team-member': 'Team membership management',
             'bridge': 'Bridge management',
-            'queue': 'Queue operations',
             'company': 'Company administration',
             'audit': 'Audit log queries',
             'inspect': 'Inspect resource details',

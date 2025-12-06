@@ -347,7 +347,7 @@ def ensure_vscode_settings_configured(logger, connection_name: str = None, unive
     disables RemoteCommand for hosts in remotePlatform.
 
     Uses REDIACC_DATASTORE_USER env variable if available, otherwise falls back to
-    datastore_path/universal_user_id.
+    datastore_path directly (no user isolation).
 
     Requirements:
     - OpenSSH 7.6+ on client for RemoteCommand support
@@ -396,15 +396,15 @@ def ensure_vscode_settings_configured(logger, connection_name: str = None, unive
 
     # Configure serverInstallPath to use shared datastore location
     # This allows SCP (running as SSH user) to write to a location accessible by both users
-    # The path is: {datastore}/{universal_user_id} (VS Code automatically appends .vscode-server)
-    # Use REDIACC_DATASTORE_USER env variable if available, otherwise construct from datastore_path
-    if connection_name and (datastore_path or os.environ.get('REDIACC_DATASTORE_USER')) and universal_user_id:
+    # The path is: {datastore} directly (VS Code automatically appends .vscode-server)
+    # Use REDIACC_DATASTORE_USER env variable if available, otherwise use datastore_path directly
+    if connection_name and (datastore_path or os.environ.get('REDIACC_DATASTORE_USER')):
         if 'remote.SSH.serverInstallPath' not in settings:
             settings['remote.SSH.serverInstallPath'] = {}
 
         # Note: Do NOT include .vscode-server - VS Code appends it automatically
-        # Prefer REDIACC_DATASTORE_USER env var, fall back to constructing path
-        vscode_server_path = os.environ.get('REDIACC_DATASTORE_USER') or f"{datastore_path}/{universal_user_id}"
+        # Prefer REDIACC_DATASTORE_USER env var, fall back to datastore path directly
+        vscode_server_path = os.environ.get('REDIACC_DATASTORE_USER') or datastore_path
         if settings['remote.SSH.serverInstallPath'].get(connection_name) != vscode_server_path:
             settings['remote.SSH.serverInstallPath'][connection_name] = vscode_server_path
             needs_update = True

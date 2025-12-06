@@ -194,28 +194,6 @@ rediacc update schedule "daily-backup" \
 rediacc delete schedule "old-schedule" --team Production
 ```
 
-### Queue Operations
-
-```bash
-# Create custom queue item
-cat > queue-task.json << EOF
-{
-  "function": "custom",
-  "command": "python /scripts/process.py",
-  "repository": "worker",
-  "priority": 1
-}
-EOF
-rediacc create queue-item \
-  --team Production \
-  --machine "worker-01" \
-  --bridge "bridge-01" \
-  --vault-file queue-task.json
-
-# Check queue status (if available)
-rediacc list queue-items --team Production --status PENDING
-```
-
 ## Search Operations
 
 ```bash
@@ -316,23 +294,8 @@ done
 MACHINE_INFO=$(rediacc --output json inspect machine prod-web --team Production)
 MACHINE_IP=$(echo "$MACHINE_INFO" | jq -r '.data.vault.ip')
 
-# Create deployment task
-cat > deploy-task.json << EOF
-{
-  "function": "deploy",
-  "repository": "webapp",
-  "version": "$GIT_COMMIT",
-  "pre_deploy": "npm test",
-  "post_deploy": "npm run migrate"
-}
-EOF
-
-# Queue deployment
-rediacc create queue-item \
-  --team Production \
-  --machine prod-web \
-  --bridge prod-bridge \
-  --vault-file deploy-task.json
+# Use machine IP for direct operations
+echo "Machine IP: $MACHINE_IP"
 ```
 
 ### Error Handling

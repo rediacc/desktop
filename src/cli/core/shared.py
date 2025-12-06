@@ -872,31 +872,24 @@ def get_machine_connection_info(machine_info: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def get_repository_paths(repo_guid: str, datastore: str, universal_user_id: str, company_id: str) -> Dict[str, str]:
-    """Calculate repository paths. Both universal_user_id and company_id are required."""
+def get_repository_paths(repo_guid: str, datastore: str, universal_user_id: str = None, company_id: str = None) -> Dict[str, str]:
+    """Calculate repository paths. universal_user_id and company_id are kept for compatibility but no longer used in paths."""
     from .config import get_logger
     logger = get_logger(__name__)
-
-    if not universal_user_id or not company_id:
-        raise ValueError("Both universal_user_id and company_id are required for repository paths")
 
     # DEBUG: Log path construction inputs
     logger.debug(f"[get_repository_paths] Constructing paths:")
     logger.debug(f"  - repo_guid: {repo_guid}")
     logger.debug(f"  - datastore: {datastore}")
-    logger.debug(f"  - universal_user_id: {universal_user_id}")
-    logger.debug(f"  - company_id: {company_id}")
 
-    # Use original GUIDs for paths
-    base_path = f"{datastore}/{universal_user_id}/{company_id}"
+    # Paths are now directly under datastore (no user/company isolation)
+    base_path = datastore
     docker_base = f"{base_path}/{INTERIM_FOLDER_NAME}/{repo_guid}/docker"
 
     logger.debug(f"  - base_path: {base_path}")
 
-    # Calculate runtime paths - use shortened company_id to avoid socket path length issues
-    # Only shorten if company_id looks like a GUID (contains dashes), otherwise use as-is
-    company_short = get_company_short(company_id)
-    runtime_base = f"/var/run/rediacc/{universal_user_id}/{company_short}/{repo_guid}"
+    # Runtime paths are now flattened: /var/run/rediacc/{repo_guid}
+    runtime_base = f"/var/run/rediacc/{repo_guid}"
     runtime_paths = {
         'runtime_base': runtime_base,
         'docker_socket': f"{runtime_base}/docker.sock",

@@ -287,10 +287,8 @@ def launch_vscode_repo(args):
         datastore_path = conn.connection_info.get('datastore')
 
         # Calculate server_install_path - same logic as ensure_vscode_settings_configured
-        # Prefer REDIACC_DATASTORE_USER env var, fall back to constructing path
-        server_install_path = None
-        if (datastore_path or os.environ.get('REDIACC_DATASTORE_USER')) and universal_user_id:
-            server_install_path = os.environ.get('REDIACC_DATASTORE_USER') or f"{datastore_path}/{universal_user_id}"
+        # Prefer REDIACC_DATASTORE_USER env var, fall back to datastore path directly
+        server_install_path = os.environ.get('REDIACC_DATASTORE_USER') or datastore_path
 
         ensure_vscode_env_setup(
             ssh_conn,
@@ -386,11 +384,8 @@ def launch_vscode_machine(args):
     env_vars = get_machine_environment(args.team, args.machine,
                                        connection_info=connection_info)
 
-    # Calculate remote path
-    if universal_user_id:
-        remote_path = f"{connection_info['datastore']}/{universal_user_id}"
-    else:
-        remote_path = connection_info['datastore']
+    # Calculate remote path (datastore path is now direct, no user isolation)
+    remote_path = connection_info['datastore']
 
     # Get SSH key
     ssh_key = get_ssh_key_from_vault(args.team)
@@ -419,10 +414,8 @@ def launch_vscode_machine(args):
         datastore_path = connection_info.get('datastore')
 
         # Calculate server_install_path - same logic as ensure_vscode_settings_configured
-        # Prefer REDIACC_DATASTORE_USER env var, fall back to constructing path
-        server_install_path = None
-        if (datastore_path or os.environ.get('REDIACC_DATASTORE_USER')) and universal_user_id:
-            server_install_path = os.environ.get('REDIACC_DATASTORE_USER') or f"{datastore_path}/{universal_user_id}"
+        # Prefer REDIACC_DATASTORE_USER env var, fall back to datastore path directly
+        server_install_path = os.environ.get('REDIACC_DATASTORE_USER') or datastore_path
 
         ensure_vscode_env_setup(
             ssh_conn,

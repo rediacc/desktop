@@ -1862,11 +1862,8 @@ class MainWindow(BaseWindow):
 
                     # Universal user info already retrieved above for both repo and machine connections
 
-                    # Calculate datastore path like terminal does
-                    if universal_user_id:
-                        remote_path = f"{connection_info['datastore']}/{universal_user_id}"
-                    else:
-                        remote_path = connection_info['datastore']
+                    # Calculate datastore path like terminal does (datastore is now direct, no user isolation)
+                    remote_path = connection_info['datastore']
 
                     connection_name = f"rediacc-{sanitize_hostname(team)}-{sanitize_hostname(machine)}"
                     description = f"VS Code Machine: {machine}"
@@ -1918,10 +1915,8 @@ class MainWindow(BaseWindow):
                         datastore_path = connection_info.get('datastore')
 
                     # Calculate server_install_path - same logic as ensure_vscode_settings_configured
-                    # Prefer REDIACC_DATASTORE_USER env var, fall back to constructing path
-                    server_install_path = None
-                    if (datastore_path or os.environ.get('REDIACC_DATASTORE_USER')) and universal_user_id:
-                        server_install_path = os.environ.get('REDIACC_DATASTORE_USER') or f"{datastore_path}/{universal_user_id}"
+                    # Prefer REDIACC_DATASTORE_USER env var, fall back to datastore path directly
+                    server_install_path = os.environ.get('REDIACC_DATASTORE_USER') or datastore_path
 
                     # Set up VS Code environment files on the remote server
                     # This creates rediacc-env.sh and server-env-setup in the serverInstallPath

@@ -90,8 +90,8 @@ def connect_to_machine(args):
         
         ssh_cmd = ['ssh', '-tt', *ssh_conn.ssh_opts.split(), f"{connection_info['user']}@{connection_info['ip']}"]
         universal_user = connection_info.get('universal_user', 'rediacc')
-        universal_user_id = connection_info.get('universal_user_id')
-        datastore_path = f"{connection_info['datastore']}/{universal_user_id}" if universal_user_id else connection_info['datastore']
+        # Datastore path is now direct (no user/company isolation)
+        datastore_path = connection_info['datastore']
         
         if args.command:
             full_command = f"sudo -u {universal_user} bash -c 'cd {datastore_path} 2>/dev/null; {args.command}'"

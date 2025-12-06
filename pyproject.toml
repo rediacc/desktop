@@ -72,13 +72,6 @@ dev = [
     "build>=0.10",
     "twine>=4.0",
 ]
-test = [
-    "pytest>=7.0",
-    "pytest-cov>=4.0",
-    "pyyaml>=6.0",
-    "playwright>=1.40.0",  # For protocol testing
-    "mss>=9.0.0",  # For cross-platform screenshots in CI
-]
 
 [project.scripts]
 rediacc = "cli.commands.cli_main:main"
@@ -86,7 +79,6 @@ rediacc-sync = "cli.commands.sync_main:main"
 rediacc-term = "cli.commands.term_main:main"
 rediacc-vscode = "cli.commands.vscode_main:main"
 rediacc-plugin = "cli.commands.plugin_main:main"
-rediacc-workflow = "cli.commands.workflow_main:main"
 rediacc-desktop = "cli.gui.main:main"
 rediacc-gui = "cli.gui.main:main"
 
@@ -131,61 +123,6 @@ cli = [
     "assets/*",
     "config/*.json",
 ]
-
-[tool.pytest.ini_options]
-minversion = "7.0"
-testpaths = ["tests"]
-python_files = ["test_*.py", "*_test.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-addopts = [
-    "-ra",  # Show summary of all test outcomes
-    "--strict-markers",  # Ensure all markers are defined
-    "--strict-config",  # Ensure config is valid
-    "--showlocals",  # Show local variables in tracebacks
-]
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "protocol: marks tests for protocol handler functionality",
-    "gui: marks tests for GUI functionality",
-    "linux: marks tests that only run on Linux",
-    "macos: marks tests that only run on macOS",
-    "windows: marks tests that only run on Windows",
-]
-filterwarnings = [
-    "error",  # Treat warnings as errors
-    "ignore::DeprecationWarning",  # Ignore deprecation warnings
-    "ignore::PendingDeprecationWarning",
-]
-
-[tool.coverage.run]
-source = ["cli"]
-omit = [
-    "*/tests/*",
-    "*/test_*.py",
-    "*/__pycache__/*",
-    "*/site-packages/*",
-]
-branch = true
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-]
-precision = 2
-show_missing = true
-skip_covered = false
-
-[tool.coverage.html]
-directory = "htmlcov"
 
 [tool.black]
 line-length = 120
