@@ -7,7 +7,7 @@ Used by: rediacc-term, rediacc vscode, GUI integrations.
 
 import sys
 from typing import Dict, Optional
-from .config import get_logger, ConfigManager
+from .config import get_logger, TokenManager
 
 logger = get_logger(__name__)
 
@@ -88,7 +88,7 @@ def get_repository_environment(
         'REPO_NETWORK_MODE': repo_network_mode,
         'REPO_PATH': repo_mount_path,
         'REPO_TAG': repo_tag,
-        'SYSTEM_API_URL': ConfigManager.get_api_url() or '',
+        'SYSTEM_API_URL': TokenManager.get_api_url() or '',
         'UNIVERSAL_USER_ID': universal_user_id or '',
         'UNIVERSAL_USER_NAME': universal_user_name or '',
     }
