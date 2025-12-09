@@ -7,7 +7,7 @@ Used by: rediacc-term, rediacc vscode, GUI integrations.
 
 import sys
 from typing import Dict, Optional
-from .config import get_logger
+from .config import get_logger, ConfigManager
 
 logger = get_logger(__name__)
 
@@ -43,8 +43,12 @@ def get_repository_environment(
     if connection_info is None or repo_paths is None or repo_info is None:
         conn = RepositoryConnection(team, machine, repo)
         conn.connect()
+        connection_info = conn.connection_info
         repo_paths = conn.repo_paths
         repo_info = conn.repo_info
+
+    # Get datastore path from connection info
+    datastore_path = connection_info.get('datastore', '') if connection_info else ''
 
     # Get universal user info
     universal_user_name, universal_user_id, company_id = _get_universal_user_info()
@@ -67,22 +71,26 @@ def get_repository_environment(
 
     # Build environment variables dictionary
     env_vars = {
-        'REPO_PATH': repo_mount_path,
-        'DOCKER_HOST': docker_host,
-        'DOCKER_FOLDER': repo_paths['docker_folder'],
-        'DOCKER_SOCKET': docker_socket,
         'DOCKER_DATA': repo_paths['docker_data'],
         'DOCKER_EXEC': repo_paths['docker_exec'],
+        'DOCKER_FOLDER': repo_paths['docker_folder'],
+        'DOCKER_HOST': docker_host,
+        'DOCKER_PLUGIN_DIR': '/run/docker/plugins',
+        'DOCKER_SOCKET': docker_socket,
+        'REDIACC_DATASTORE_USER': datastore_path,
+        'REDIACC_DESKTOP': sys.executable,
         'REDIACC_IMMOVABLE': repo_paths['immovable_path'],
-        'REPO_NETWORK_ID': str(repo_network_id),
-        'REPO_NETWORK_MODE': repo_network_mode,
-        'REPO_TAG': repo_tag,
+        'REDIACC_MACHINE': machine,
+        'REDIACC_NETWORK_ID': str(repo_network_id),
         'REDIACC_REPO': repo,
         'REDIACC_TEAM': team,
-        'REDIACC_MACHINE': machine,
-        'REDIACC_DESKTOP': sys.executable,
-        'UNIVERSAL_USER_NAME': universal_user_name or '',
+        'REPO_NETWORK_ID': str(repo_network_id),
+        'REPO_NETWORK_MODE': repo_network_mode,
+        'REPO_PATH': repo_mount_path,
+        'REPO_TAG': repo_tag,
+        'SYSTEM_API_URL': ConfigManager.get_api_url() or '',
         'UNIVERSAL_USER_ID': universal_user_id or '',
+        'UNIVERSAL_USER_NAME': universal_user_name or '',
     }
 
     logger.debug(f"[get_repository_environment] Generated environment for {team}/{machine}/{repo}:")

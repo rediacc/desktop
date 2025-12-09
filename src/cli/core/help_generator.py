@@ -112,7 +112,7 @@ def get_api_commands() -> List[Dict[str, str]]:
             'company': 'Company administration',
             'audit': 'Audit log queries',
             'inspect': 'Inspect resource details',
-            'distributed-storage': 'Distributed storage management',
+            'distributed-storage': 'Ceph storage management',
             'auth': 'Authentication operations'
         }
 

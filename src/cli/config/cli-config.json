@@ -114,7 +114,7 @@
       },
       "team": {
         "endpoint": "CreateTeam",
-        "params": "lambda args: {'teamName': args.name, 'teamVault': get_vault_data(args) or '{}'}",
+        "params": "lambda args: {'teamName': args.team, 'vaultContent': args.vault_content}",
         "success_msg": "Successfully created team: {name}",
         "help": {
           "description": "Create a new team in your company",
@@ -125,28 +125,18 @@
               "required": true,
               "example": "production-team"
             },
-            "vault": {
-              "description": "JSON object with team configuration (SSH keys, settings)",
-              "required": false,
-              "example": "{\"SSH_PRIVATE_KEY\": \"-----BEGIN RSA...\"}"
-            },
             "vault-file": {
               "description": "File containing JSON vault data",
               "required": false,
               "example": "team-config.json"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
             }
           },
-          "examples": [
-            {
-              "command": "rediacc create team production-team",
-              "description": "Create a basic team"
-            },
-            {
-              "command": "rediacc create team dev-team --vault-file team-config.json",
-              "description": "Create team with vault configuration from file"
-            }
-          ],
-          "notes": "Team creation counts against your subscription limits. The creator automatically becomes a team member.",
           "rules": [
             "Team name must be unique within the company",
             "Team vault data cannot be null or empty",
@@ -163,7 +153,7 @@
       },
       "region": {
         "endpoint": "CreateRegion",
-        "params": "lambda args: {'regionName': args.name, 'regionVault': get_vault_data(args) or '{}'}",
+        "params": "lambda args: {'regionName': args.region, 'vaultContent': args.vault_content}",
         "success_msg": "Successfully created region: {name}",
         "help": {
           "description": "Create a new region for organizing bridges",
@@ -174,28 +164,18 @@
               "required": true,
               "example": "us-east"
             },
-            "vault": {
-              "description": "JSON configuration for the region (provider settings, metadata)",
-              "required": false,
-              "example": "{\"provider\": \"aws\", \"zone\": \"us-east-1\"}"
-            },
             "vault-file": {
               "description": "File containing JSON vault configuration",
               "required": false,
               "example": "region-config.json"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
             }
           },
-          "examples": [
-            {
-              "command": "rediacc create region us-east",
-              "description": "Create a basic region"
-            },
-            {
-              "command": "rediacc create region europe-west --vault '{\"provider\":\"azure\",\"location\":\"westeurope\"}'",
-              "description": "Create region with provider configuration"
-            }
-          ],
-          "notes": "Regions cannot be deleted if they contain bridges. Region names must be unique across the company.",
           "rules": [
             "Region name must be unique within the company",
             "Region vault data cannot be null or empty",
@@ -212,7 +192,7 @@
       },
       "bridge": {
         "endpoint": "CreateBridge",
-        "params": "lambda args: {'regionName': args.region, 'bridgeName': args.name, 'bridgeVault': get_vault_data(args) or '{}'}",
+        "params": "lambda args: {'regionName': args.region, 'bridgeName': args.bridge, 'vaultContent': args.vault_content}",
         "success_msg": "Successfully created bridge: {name} in region {region}",
         "help": {
           "description": "Create a new bridge for task processing",
@@ -222,11 +202,6 @@
               "description": "Region where the bridge will be created",
               "required": true,
               "example": "us-east"
-            },
-            "vault": {
-              "description": "JSON configuration for the bridge (batch size, timeout settings)",
-              "required": false,
-              "example": "{\"batch_size\": 5, \"poll_interval\": 30}"
             },
             "bridge": {
               "description": "",
@@ -239,19 +214,14 @@
               "required": true,
               "example": "",
               "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
             }
           },
-          "examples": [
-            {
-              "command": "rediacc create bridge us-east bridge-01",
-              "description": "Create a basic bridge"
-            },
-            {
-              "command": "rediacc create bridge us-east high-priority-bridge --vault '{\"batch_size\":10}'",
-              "description": "Create bridge with custom batch size"
-            }
-          ],
-          "notes": "After creation, start the bridge with './bridge --bridge-mode token=<token> api_url=<url> master_password=<pwd>'. Use 'rediacc login --target bridge-name' to get a bridge-specific token.",
           "rules": [
             "Bridge name must be unique within the region",
             "Region must exist and belong to the user's company",
@@ -268,7 +238,7 @@
       },
       "machine": {
         "endpoint": "CreateMachine",
-        "params": "lambda args: {'teamName': args.team, 'bridgeName': args.bridge, 'machineName': args.name, 'machineVault': get_vault_data(args) or '{}'}",
+        "params": "lambda args: {'teamName': args.team, 'bridgeName': args.bridge, 'machineName': args.machine, 'vaultContent': args.vault_content}",
         "success_msg": "Successfully created machine: {name} for team {team}",
         "help": {
           "description": "Create a new machine in a team",
@@ -284,11 +254,6 @@
               "required": true,
               "example": "us-east-bridge-01"
             },
-            "vault": {
-              "description": "JSON with machine config (ip, user, ssh_port, datastore)",
-              "required": false,
-              "example": "{\"ip\": \"10.0.0.5\", \"user\": \"rediacc\", \"datastore\": \"/mnt/rediacc\"}"
-            },
             "machine": {
               "description": "",
               "required": true,
@@ -300,19 +265,14 @@
               "required": true,
               "example": "",
               "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
             }
           },
-          "examples": [
-            {
-              "command": "rediacc create machine production-team us-east-bridge web-01",
-              "description": "Create a basic machine"
-            },
-            {
-              "command": "rediacc create machine prod us-bridge db-01 --vault '{\"ip\":\"10.0.0.10\"}'",
-              "description": "Create machine with IP configuration"
-            }
-          ],
-          "notes": "You must be a member of the team. The bridge must exist and be accessible. Machine creation counts against subscription limits.",
           "rules": [
             "Machine name must be unique across the entire company (not just within team)",
             "User must be a member of the specified team",
@@ -329,7 +289,7 @@
       },
       "repository": {
         "endpoint": "CreateRepository",
-        "params": "lambda args: {'teamName': args.team, 'repoName': args.repository, 'repoVault': get_vault_data(args) or '{}', 'parentRepoName': args.parent_repo, 'repoGuid': args.repo_guid, 'networkMode': args.network_mode, 'repoTag': args.repo_tag}",
+        "params": "lambda args: {'teamName': args.team, 'repoName': args.repository, 'vaultContent': args.vault_content, 'parentRepoName': args.parent_repo, 'repoGuid': args.repo_guid, 'networkMode': args.network_mode, 'repoTag': args.repo_tag}",
         "success_msg": "Successfully created repository: {name} for team {team}",
         "help": {
           "description": "Create a new repository for code and data storage",
@@ -339,11 +299,6 @@
               "description": "Team that will own this repository",
               "required": true,
               "example": "dev-team"
-            },
-            "vault": {
-              "description": "JSON configuration (size, type, settings)",
-              "required": false,
-              "example": "{\"size\": \"10G\", \"type\": \"docker\"}"
             },
             "parent_repo": {
               "description": "",
@@ -373,6 +328,12 @@
               "required": true,
               "example": "",
               "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
             }
           },
           "rules": [
@@ -394,7 +355,7 @@
       },
       "storage": {
         "endpoint": "CreateStorage",
-        "params": "lambda args: {'teamName': args.team, 'storageName': args.storage, 'storageVault': get_vault_data(args) or '{}'}",
+        "params": "lambda args: {'teamName': args.team, 'storageName': args.storage, 'vaultContent': args.vault_content}",
         "success_msg": "Successfully created storage: {name} for team {team}",
         "help": {
           "description": "Create a new storage resource",
@@ -405,29 +366,19 @@
               "required": true,
               "example": "data-team"
             },
-            "vault": {
-              "description": "JSON with storage credentials and configuration",
-              "required": false,
-              "example": "{\"type\": \"s3\", \"bucket\": \"my-backups\", \"region\": \"us-east-1\", \"access_key\": \"...\", \"secret_key\": \"...\"}"
-            },
             "storage": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "vault_content": {
               "description": "",
               "required": true,
               "example": "",
               "type": "string"
             }
           },
-          "examples": [
-            {
-              "command": "rediacc create storage backup-team s3-archive",
-              "description": "Create a basic storage resource"
-            },
-            {
-              "command": "rediacc create storage prod azure-backup --vault-file azure-config.json",
-              "description": "Create Azure storage with credentials from file"
-            }
-          ],
-          "notes": "Storage credentials are encrypted in the vault. Supported types include S3, Azure Blob, GCS, SFTP, and SMB. Used with 'repo_push' and 'repo_pull' queue functions.",
           "rules": [
             "Storage name must be unique within the team",
             "User must be a member of the specified team",
@@ -651,7 +602,7 @@
               "description": "Extract subscription data for monitoring"
             }
           ],
-          "notes": "Plans: COMMUNITY (free), PRO, BUSINESS, ENTERPRISE. Higher tiers offer more resources, priority levels, and features like schedules and distributed storage.",
+          "notes": "Plans: COMMUNITY (free), PRO, BUSINESS, ENTERPRISE. Higher tiers offer more resources, priority levels, and features like schedules and Ceph storage.",
           "rules": [
             "User must be authenticated with valid session",
             "Can only view subscription information for your own company",
@@ -1064,6 +1015,90 @@
       "list-user-vault": {
         "endpoint": "GetUserVault",
         "params": "lambda args: {}"
+      },
+      "list-ceph-rbd-snapshots": {
+        "endpoint": "GetCephRbdSnapshots",
+        "params": "lambda args: {'imageName': args.image, 'poolName': args.pool, 'teamName': args.team}",
+        "help": {
+          "parameters": {
+            "image": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "pool": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "list-ceph-rbd-images": {
+        "endpoint": "GetCephRbdImages",
+        "params": "lambda args: {'poolName': args.pool, 'teamName': args.team}",
+        "help": {
+          "parameters": {
+            "pool": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "list-ceph-clusters": {
+        "endpoint": "GetCephClusters",
+        "params": "lambda args: {}"
+      },
+      "list-ceph-pools": {
+        "endpoint": "GetCephPools",
+        "params": "lambda args: {'teamName': args.team, 'clusterName': args.cluster}",
+        "help": {
+          "parameters": {
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "cluster": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "list-ceph-cluster-machines": {
+        "endpoint": "GetCephClusterMachines",
+        "params": "lambda args: {'clusterName': args.cluster}",
+        "help": {
+          "parameters": {
+            "cluster": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
       }
     },
     "rm": {
@@ -1395,7 +1430,7 @@
       },
       "update-bridge-vault": {
         "endpoint": "UpdateBridgeVault",
-        "params": "lambda args: {'regionName': args.region, 'bridgeName': args.name, 'bridgeVault': get_vault_data(args) or '{}', 'vaultVersion': args.vault_version}",
+        "params": "lambda args: {'regionName': args.region, 'bridgeName': args.bridge, 'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
         "success_msg": "Operation completed successfully",
         "help": {
           "parameters": {
@@ -1422,6 +1457,12 @@
               "required": true,
               "example": "",
               "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
             }
           }
         }
@@ -1431,7 +1472,7 @@
       "team": {
         "endpoint": "UpdateTeamName",
         "params": "lambda args: {'currentTeamName': args.current_team_name, 'newTeamName': args.new_name}",
-        "success_msg": "Successfully updated team name: {name} \u2192 {new_name}",
+        "success_msg": "Successfully updated team name: {name} → {new_name}",
         "help": {
           "description": "Rename a team",
           "details": "Changes the name of an existing team. All resources remain associated with the team. References in scripts and configurations must be updated manually.",
@@ -1464,7 +1505,7 @@
       "region": {
         "endpoint": "UpdateRegionName",
         "params": "lambda args: {'currentRegionName': args.current_region_name, 'newRegionName': args.new_name}",
-        "success_msg": "Successfully updated region name: {name} \u2192 {new_name}",
+        "success_msg": "Successfully updated region name: {name} → {new_name}",
         "help": {
           "description": "Rename a region",
           "details": "Changes the name of an existing region. All bridges within the region remain associated. Update any scripts or configurations that reference the old name.",
@@ -1497,7 +1538,7 @@
       "bridge": {
         "endpoint": "UpdateBridgeName",
         "params": "lambda args: {'regionName': args.region, 'currentBridgeName': args.current_bridge_name, 'newBridgeName': args.new_name}",
-        "success_msg": "Successfully updated bridge name: {name} \u2192 {new_name}",
+        "success_msg": "Successfully updated bridge name: {name} → {new_name}",
         "help": {
           "description": "Rename a bridge",
           "details": "Changes the name of an existing bridge within a region. Machine assignments remain unchanged. Running bridge processes are not affected.",
@@ -1535,7 +1576,7 @@
       "machine": {
         "endpoint": "UpdateMachineName",
         "params": "lambda args: {'teamName': args.team, 'currentMachineName': args.current_machine_name, 'newMachineName': args.new_name}",
-        "success_msg": "Successfully updated machine name: {name} \u2192 {new_name}",
+        "success_msg": "Successfully updated machine name: {name} → {new_name}",
         "help": {
           "description": "Rename a machine",
           "details": "Changes the name of an existing machine. The new name must be unique across the entire company. Active queue items continue processing.",
@@ -1573,7 +1614,7 @@
       "machine-bridge": {
         "endpoint": "UpdateMachineAssignedBridge",
         "params": "lambda args: {'teamName': args.team, 'machineName': args.name, 'newBridgeName': args.new_bridge}",
-        "success_msg": "Successfully updated machine bridge: {name} \u2192 {new_bridge}",
+        "success_msg": "Successfully updated machine bridge: {name} → {new_bridge}",
         "help": {
           "description": "Reassign a machine to a different bridge",
           "details": "Changes which bridge processes queue items for a machine. Useful for load balancing, maintenance, or moving machines between regions. Pending queue items remain with the original bridge.",
@@ -1636,7 +1677,7 @@
       "repository": {
         "endpoint": "UpdateRepositoryName",
         "params": "lambda args: {'teamName': args.team, 'currentRepoName': args.current_repo_name, 'newRepoName': args.new_name}",
-        "success_msg": "Successfully updated repository name: {name} \u2192 {new_name}",
+        "success_msg": "Successfully updated repository name: {name} → {new_name}",
         "help": {
           "description": "Rename a repository",
           "details": "Changes the name of an existing repository within a team. Repository data and configurations are preserved. Update deployment scripts that reference the old name.",
@@ -1673,7 +1714,7 @@
       },
       "repository-vault": {
         "endpoint": "UpdateRepositoryVault",
-        "params": "lambda args: {'teamName': args.team, 'repoName': args.repository, 'repoTag': args.repo_tag, 'repoVault': get_vault_data(args) or '{}', 'vaultVersion': args.vault_version}",
+        "params": "lambda args: {'teamName': args.team, 'repoName': args.repository, 'repoTag': args.repo_tag, 'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
         "success_msg": "Successfully updated repository vault: {name}",
         "help": {
           "description": "Update repository configuration vault",
@@ -1683,11 +1724,6 @@
               "description": "Team that owns the repository",
               "required": true,
               "example": "dev-team"
-            },
-            "vault": {
-              "description": "JSON configuration data",
-              "required": false,
-              "example": "{\"size\": \"20G\", \"env\": {\"NODE_ENV\": \"production\"}}"
             },
             "repository": {
               "description": "",
@@ -1702,6 +1738,12 @@
               "type": "string"
             },
             "repo_tag": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "vault_content": {
               "description": "",
               "required": true,
               "example": "",
@@ -1725,7 +1767,7 @@
       "storage": {
         "endpoint": "UpdateStorageName",
         "params": "lambda args: {'teamName': args.team, 'currentStorageName': args.current_storage_name, 'newStorageName': args.new_name}",
-        "success_msg": "Successfully updated storage name: {name} \u2192 {new_name}",
+        "success_msg": "Successfully updated storage name: {name} → {new_name}",
         "help": {
           "description": "Rename a storage resource",
           "details": "Changes the name of an existing storage configuration. The actual storage backend (S3 bucket, Azure container, etc.) is not affected.",
@@ -1762,7 +1804,7 @@
       },
       "storage-vault": {
         "endpoint": "UpdateStorageVault",
-        "params": "lambda args: {'teamName': args.team, 'storageName': args.storage, 'storageVault': get_vault_data(args) or '{}', 'vaultVersion': args.vault_version}",
+        "params": "lambda args: {'teamName': args.team, 'storageName': args.storage, 'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
         "success_msg": "Successfully updated storage vault: {name}",
         "help": {
           "description": "Update storage credentials and configuration",
@@ -1772,11 +1814,6 @@
               "description": "Team that owns the storage",
               "required": true,
               "example": "backup-team"
-            },
-            "vault": {
-              "description": "JSON with storage credentials and config",
-              "required": false,
-              "example": "{\"type\": \"s3\", \"bucket\": \"backups\", \"access_key\": \"...\", \"secret_key\": \"...\"}"
             },
             "storage": {
               "description": "",
@@ -1789,19 +1826,14 @@
               "required": false,
               "example": "",
               "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
             }
           },
-          "examples": [
-            {
-              "command": "rediacc update storage-vault backup s3-main --vault-file new-creds.json",
-              "description": "Update S3 credentials from file"
-            },
-            {
-              "command": "rediacc update storage-vault data azure-storage --vault '{\"container\":\"new-container\"}'",
-              "description": "Change Azure container"
-            }
-          ],
-          "notes": "Credentials are encrypted. Test access after updating. Supports S3, Azure Blob, GCS, SFTP, and SMB.",
           "rules": [
             "User must be authenticated to perform this operation",
             "User must be a member of the specified team",
@@ -2030,559 +2062,7 @@
         }
       }
     },
-    "distributed-storage": {
-      "create-cluster": {
-        "endpoint": "CreateDistributedStorageCluster",
-        "params": "lambda args: {'clusterName': args.cluster, 'clusterVault': get_vault_data(args) or '{}'}",
-        "success_msg": "Successfully created distributed storage cluster: {name} for team {team}",
-        "help": {
-          "description": "Create a distributed storage cluster",
-          "details": "Creates a cluster configuration for distributed storage across multiple machines. Enables redundant storage with automatic replication and failover.",
-          "parameters": {
-            "vault": {
-              "description": "JSON configuration for the cluster",
-              "required": false,
-              "example": "{\"replication_factor\": 3, \"storage_class\": \"ssd\"}"
-            },
-            "vault-file": {
-              "description": "File containing JSON vault data",
-              "required": false,
-              "example": "cluster-config.json"
-            },
-            "cluster": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          },
-          "rules": [
-            "User must be authenticated with valid credentials",
-            "User must be a member of the specified team",
-            "Cluster name must be unique within the team",
-            "Team must exist in your company",
-            "Cluster configuration requires specific parameters in vault data",
-            "Pool PG number must be between 1 and 1024",
-            "New clusters start with PENDING status",
-            "No subscription plan restrictions for creating clusters",
-            "Vault data is encrypted using company master password",
-            "Cluster creation is logged in audit trail"
-          ]
-        }
-      },
-      "delete-cluster": {
-        "endpoint": "DeleteDistributedStorageCluster",
-        "params": "lambda args: {'clusterName': args.cluster}",
-        "confirm_msg": "Are you sure you want to delete distributed storage cluster '{name}' from team '{team}'?",
-        "success_msg": "Successfully deleted distributed storage cluster: {name}",
-        "help": {
-          "description": "Delete a distributed storage cluster",
-          "details": "Permanently removes a distributed storage cluster configuration. Does not delete data on machines, only the cluster configuration.",
-          "parameters": {
-            "force": {
-              "description": "Skip confirmation prompt",
-              "required": false,
-              "example": "--force"
-            },
-            "cluster": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          },
-          "rules": [
-            "User must be authenticated with valid credentials",
-            "User must be either an administrator or team member",
-            "Cluster must exist in the specified team",
-            "Cluster must have zero nodes before deletion",
-            "Cannot delete cluster with machines still attached",
-            "Deletion removes cluster configuration and credentials",
-            "Associated vault data is automatically cleaned up",
-            "Machine distributed storage flags remain unchanged",
-            "Operation is permanent and cannot be undone",
-            "Deletion is logged in audit trail for compliance"
-          ]
-        }
-      },
-      "update-vault": {
-        "endpoint": "UpdateDistributedStorageClusterVault",
-        "params": "lambda args: {'clusterName': args.cluster, 'clusterVault': get_vault_data(args) or '{}', 'vaultVersion': args.vault_version}",
-        "success_msg": "Successfully updated distributed storage cluster vault: {cluster}",
-        "help": {
-          "description": "Update cluster configuration vault",
-          "details": "Updates the encrypted configuration for a distributed storage cluster including replication settings, storage policies, and performance parameters.",
-          "parameters": {
-            "cluster": {
-              "description": "Cluster name",
-              "required": true,
-              "example": "main-cluster"
-            },
-            "vault": {
-              "description": "JSON configuration data",
-              "required": false,
-              "example": "{\"replication_factor\": 3, \"consistency_level\": \"strong\"}"
-            },
-            "vault-file": {
-              "description": "File containing JSON vault data",
-              "required": false,
-              "example": "cluster-config.json"
-            },
-            "vault-version": {
-              "description": "Vault schema version (default: 1)",
-              "required": false,
-              "example": "2"
-            },
-            "vault_version": {
-              "description": "",
-              "required": false,
-              "example": "",
-              "type": "string"
-            }
-          },
-          "rules": [
-            "User must be authenticated with valid credentials",
-            "User must be a member of the team owning the cluster",
-            "Cluster must exist before updating vault",
-            "Vault data must be provided as text (cannot be empty)",
-            "Maximum vault chunk size is 3,072 characters",
-            "Large vaults automatically split into multiple chunks",
-            "Vault data is encrypted with company master password",
-            "Each update increments vault version number",
-            "Previous vault data is completely replaced",
-            "Update is logged in audit trail"
-          ]
-        }
-      },
-      "update-machine-distributed-storage": {
-        "endpoint": "UpdateMachineDistributedStorage",
-        "params": "lambda args: {'teamName': args.team, 'machineName': args.machine, 'clusterName': args.cluster}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "machine": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "cluster": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "create-distributed-storage-rbd-image": {
-        "endpoint": "CreateDistributedStorageRbdImage",
-        "params": "lambda args: {'poolName': args.pool, 'teamName': args.team, 'imageName': args.image, 'imageVault': get_vault_data(args) or '{}', 'machineName': args.machine}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "pool": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "image": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "machine": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "list-distributed-storage-clusters": {
-        "endpoint": "GetDistributedStorageClusters",
-        "params": "lambda args: {}",
-        "success_msg": "Operation completed successfully"
-      },
-      "delete-distributed-storage-rbd-image": {
-        "endpoint": "DeleteDistributedStorageRbdImage",
-        "params": "lambda args: {'imageName': args.image, 'poolName': args.pool, 'teamName': args.team}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "image": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "pool": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "create-distributed-storage-rbd-clone": {
-        "endpoint": "CreateDistributedStorageRbdClone",
-        "params": "lambda args: {'snapshotName': args.snapshot, 'imageName': args.image, 'poolName': args.pool, 'teamName': args.team, 'cloneName': args.clone, 'cloneVault': get_vault_data(args) or '{}'}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "snapshot": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "image": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "pool": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "clone": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "list-distributed-storage-rbd-snapshots": {
-        "endpoint": "GetDistributedStorageRbdSnapshots",
-        "params": "lambda args: {'imageName': args.image, 'poolName': args.pool, 'teamName': args.team}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "image": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "pool": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "list-distributed-storage-rbd-clones": {
-        "endpoint": "GetDistributedStorageRbdClones",
-        "params": "lambda args: {'snapshotName': args.snapshot, 'imageName': args.image, 'poolName': args.pool, 'teamName': args.team}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "snapshot": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "image": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "pool": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "create-distributed-storage-pool": {
-        "endpoint": "CreateDistributedStoragePool",
-        "params": "lambda args: {'clusterName': args.cluster, 'teamName': args.team, 'poolName': args.pool, 'poolVault': get_vault_data(args) or '{}'}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "cluster": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "pool": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "list-distributed-storage-rbd-images": {
-        "endpoint": "GetDistributedStorageRbdImages",
-        "params": "lambda args: {'poolName': args.pool, 'teamName': args.team}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "pool": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "create-distributed-storage-rbd-snapshot": {
-        "endpoint": "CreateDistributedStorageRbdSnapshot",
-        "params": "lambda args: {'imageName': args.image, 'poolName': args.pool, 'teamName': args.team, 'snapshotName': args.snapshot, 'snapshotVault': get_vault_data(args) or '{}'}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "image": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "pool": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "snapshot": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "delete-distributed-storage-rbd-clone": {
-        "endpoint": "DeleteDistributedStorageRbdClone",
-        "params": "lambda args: {'cloneName': args.clone, 'snapshotName': args.snapshot, 'imageName': args.image, 'poolName': args.pool, 'teamName': args.team}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "clone": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "snapshot": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "image": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "pool": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "delete-distributed-storage-pool": {
-        "endpoint": "DeleteDistributedStoragePool",
-        "params": "lambda args: {'poolName': args.pool, 'teamName': args.team}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "pool": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "list-distributed-storage-pools": {
-        "endpoint": "GetDistributedStoragePools",
-        "params": "lambda args: {'teamName': args.team, 'clusterName': args.cluster}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "cluster": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "list-distributed-storage-cluster-machines": {
-        "endpoint": "GetDistributedStorageClusterMachines",
-        "params": "lambda args: {'clusterName': args.cluster}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "cluster": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "update-distributed-storage-pool-vault": {
-        "endpoint": "UpdateDistributedStoragePoolVault",
-        "params": "lambda args: {'poolName': args.pool, 'teamName': args.team, 'poolVault': get_vault_data(args) or '{}', 'vaultVersion': args.vault_version}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "pool": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "vault_version": {
-              "description": "",
-              "required": false,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      },
-      "delete-distributed-storage-rbd-snapshot": {
-        "endpoint": "DeleteDistributedStorageRbdSnapshot",
-        "params": "lambda args: {'snapshotName': args.snapshot, 'imageName': args.image, 'poolName': args.pool, 'teamName': args.team}",
-        "success_msg": "Operation completed successfully",
-        "help": {
-          "parameters": {
-            "snapshot": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "image": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "pool": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            },
-            "team": {
-              "description": "",
-              "required": true,
-              "example": "",
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
+    "distributed-storage": {},
     "permission": {
       "create-group": {
         "endpoint": "CreatePermissionGroup",
@@ -2920,17 +2400,12 @@
       },
       "update-vault": {
         "endpoint": "UpdateCompanyVault",
-        "params": "lambda args: {'companyVault': get_vault_data(args) or '{}', 'vaultVersion': getattr(args, 'vault_version', 1)}",
+        "params": "lambda args: {'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
         "success_msg": "Successfully updated company vault",
         "help": {
           "description": "Update company-wide vault configuration",
           "details": "Updates the encrypted vault containing company-wide settings, credentials, and configuration that apply to all teams and users.",
           "parameters": {
-            "vault": {
-              "description": "JSON vault data to store",
-              "required": false,
-              "example": "{\"UNIVERSAL_USER_NAME\": \"system\", \"API_KEY\": \"abc123\"}"
-            },
             "vault-file": {
               "description": "File containing JSON vault data",
               "required": false,
@@ -2940,19 +2415,14 @@
               "description": "Vault schema version",
               "required": false,
               "example": "2"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
             }
           },
-          "examples": [
-            {
-              "command": "rediacc company update-vault --vault-file company-config.json",
-              "description": "Update from configuration file"
-            },
-            {
-              "command": "rediacc company update-vault --vault '{\"UNIVERSAL_USER_NAME\":\"rediacc\"}'",
-              "description": "Update specific vault field"
-            }
-          ],
-          "notes": "Requires company admin permissions. Vault data is encrypted with master password. Changes affect all teams.",
           "rules": [
             "Must be authenticated with company administrator permissions",
             "Vault data must be valid JSON format",
@@ -3241,7 +2711,7 @@
       "update-email": {
         "endpoint": "UpdateUserEmail",
         "params": "lambda args: {'currentUserEmail': args.current_email, 'newUserEmail': args.new_email}",
-        "success_msg": "Successfully updated user email: {current_email} \u2192 {new_email}",
+        "success_msg": "Successfully updated user email: {current_email} → {new_email}",
         "help": {
           "description": "Change a user's email address",
           "details": "Updates a user's email address across the system. The new email becomes the login identifier. All permissions and data are preserved.",
@@ -3640,7 +3110,7 @@
       },
       "update-response": {
         "endpoint": "UpdateQueueItemResponse",
-        "params": "lambda args: {'taskId': args.task_id, 'responseVault': get_vault_data(args) or '{}'}",
+        "params": "lambda args: {'taskId': args.task_id, 'vaultContent': args.vault_content}",
         "success_msg": "Successfully updated queue item response: {task_id}",
         "help": {
           "description": "Update progress/status of a processing queue item",
@@ -3651,23 +3121,13 @@
               "required": true,
               "example": "550e8400-e29b-41d4-a716-446655440000"
             },
-            "vault": {
-              "description": "JSON progress data",
-              "required": false,
-              "example": "{\"progress\": 50, \"status\": \"Processing file 2 of 4\"}"
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
             }
           },
-          "examples": [
-            {
-              "command": "rediacc queue update-response 550e8400 --vault '{\"progress\":25}'",
-              "description": "Update task progress to 25%"
-            },
-            {
-              "command": "rediacc queue update-response 550e8400 --vault-file status.json",
-              "description": "Update from status file"
-            }
-          ],
-          "notes": "Used by bridges during task execution. Can be called multiple times. Does not change task state.",
           "rules": [
             "Requires bridge or administrative authentication",
             "Task must be assigned to caller (for bridges)",
@@ -3684,7 +3144,7 @@
       },
       "complete": {
         "endpoint": "UpdateQueueItemToCompleted",
-        "params": "lambda args: {'taskId': args.task_id, 'finalVault': get_vault_data(args) or '{}', 'finalStatus': args.final_status}",
+        "params": "lambda args: {'taskId': args.task_id, 'vaultContent': args.vault_content, 'finalStatus': args.final_status}",
         "success_msg": "Successfully completed queue item: {task_id}",
         "help": {
           "description": "Mark a queue item as completed",
@@ -3695,15 +3155,16 @@
               "required": true,
               "example": "550e8400-e29b-41d4-a716-446655440000"
             },
-            "vault": {
-              "description": "JSON result data to store",
-              "required": false,
-              "example": "{\"status\": \"success\", \"output\": \"Task completed\"}"
-            },
             "final_status": {
               "description": "",
               "required": true,
               "example": ""
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
             }
           },
           "rules": [
@@ -3840,6 +3301,58 @@
             "Links to original item for audit trail",
             "May fail again if underlying issue not resolved"
           ]
+        }
+      },
+      "create-queue-item": {
+        "endpoint": "CreateQueueItem",
+        "params": "lambda args: {'teamName': args.team, 'machineName': args.machine, 'bridgeName': args.bridge, 'vaultContent': args.vault_content, 'priority': args.priority}",
+        "help": {
+          "parameters": {
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "machine": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "bridge": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "priority": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "delete-queue-item": {
+        "endpoint": "DeleteQueueItem",
+        "params": "lambda args: {'taskId': args.task_id}",
+        "help": {
+          "parameters": {
+            "task_id": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
         }
       }
     },
@@ -4100,12 +3613,126 @@
             }
           }
         }
+      },
+      "create-ceph-rbd-clone": {
+        "endpoint": "CreateCephRbdClone",
+        "params": "lambda args: {'snapshotName': args.snapshot, 'imageName': args.image, 'poolName': args.pool, 'teamName': args.team, 'cloneName': args.clone, 'vaultContent': args.vault_content}",
+        "help": {
+          "parameters": {
+            "snapshot": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "image": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "pool": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "clone": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "delete-ceph-rbd-clone": {
+        "endpoint": "DeleteCephRbdClone",
+        "params": "lambda args: {'cloneName': args.clone, 'snapshotName': args.snapshot, 'imageName': args.image, 'poolName': args.pool, 'teamName': args.team}",
+        "help": {
+          "parameters": {
+            "clone": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "snapshot": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "image": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "pool": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "list-ceph-rbd-clones": {
+        "endpoint": "GetCephRbdClones",
+        "params": "lambda args: {'snapshotName': args.snapshot, 'imageName': args.image, 'poolName': args.pool, 'teamName': args.team}",
+        "help": {
+          "parameters": {
+            "snapshot": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "image": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "pool": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
       }
     },
     "machine": {
       "update-machine-vault": {
         "endpoint": "UpdateMachineVault",
-        "params": "lambda args: {'teamName': args.team, 'machineName': args.machine, 'machineVault': get_vault_data(args) or '{}', 'vaultVersion': args.vault_version}",
+        "params": "lambda args: {'teamName': args.team, 'machineName': args.machine, 'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
         "success_msg": "Operation completed successfully",
         "help": {
           "parameters": {
@@ -4124,6 +3751,12 @@
             "vault_version": {
               "description": "",
               "required": false,
+              "example": "",
+              "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
               "example": "",
               "type": "string"
             }
@@ -4198,12 +3831,38 @@
             }
           }
         }
+      },
+      "update-machine-ceph": {
+        "endpoint": "UpdateMachineCeph",
+        "params": "lambda args: {'teamName': args.team, 'machineName': args.machine, 'clusterName': args.cluster}",
+        "help": {
+          "parameters": {
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "machine": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "cluster": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
       }
     },
     "region": {
       "update-region-vault": {
         "endpoint": "UpdateRegionVault",
-        "params": "lambda args: {'regionName': args.region, 'regionVault': args.vault, 'vaultVersion': args.vault_version}",
+        "params": "lambda args: {'regionName': args.region, 'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
         "success_msg": "Operation completed successfully",
         "help": {
           "parameters": {
@@ -4213,15 +3872,15 @@
               "example": "",
               "type": "string"
             },
-            "vault": {
+            "vault_version": {
               "description": "",
               "required": false,
               "example": "",
               "type": "string"
             },
-            "vault_version": {
+            "vault_content": {
               "description": "",
-              "required": false,
+              "required": true,
               "example": "",
               "type": "string"
             }
@@ -4370,18 +4029,18 @@
       },
       "update-user-vault": {
         "endpoint": "UpdateUserVault",
-        "params": "lambda args: {'userVault': args.vault, 'vaultVersion': args.vault_version}",
+        "params": "lambda args: {'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
         "help": {
           "parameters": {
-            "vault": {
+            "vault_version": {
               "description": "",
               "required": false,
               "example": "",
               "type": "string"
             },
-            "vault_version": {
+            "vault_content": {
               "description": "",
-              "required": false,
+              "required": true,
               "example": "",
               "type": "string"
             }
@@ -4467,12 +4126,290 @@
             }
           }
         }
+      },
+      "delete-ceph-pool": {
+        "endpoint": "DeleteCephPool",
+        "params": "lambda args: {'poolName': args.pool, 'teamName': args.team}",
+        "help": {
+          "parameters": {
+            "pool": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "create-ceph-pool": {
+        "endpoint": "CreateCephPool",
+        "params": "lambda args: {'clusterName': args.cluster, 'teamName': args.team, 'poolName': args.pool, 'vaultContent': args.vault_content}",
+        "help": {
+          "parameters": {
+            "cluster": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "pool": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "create-ceph-rbd-image": {
+        "endpoint": "CreateCephRbdImage",
+        "params": "lambda args: {'poolName': args.pool, 'teamName': args.team, 'imageName': args.image, 'vaultContent': args.vault_content, 'machineName': args.machine}",
+        "help": {
+          "parameters": {
+            "pool": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "image": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "machine": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "delete-ceph-rbd-image": {
+        "endpoint": "DeleteCephRbdImage",
+        "params": "lambda args: {'imageName': args.image, 'poolName': args.pool, 'teamName': args.team}",
+        "help": {
+          "parameters": {
+            "image": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "pool": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "create-ceph-cluster": {
+        "endpoint": "CreateCephCluster",
+        "params": "lambda args: {'clusterName': args.cluster, 'vaultContent': args.vault_content}",
+        "help": {
+          "parameters": {
+            "cluster": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "update-ceph-pool-vault": {
+        "endpoint": "UpdateCephPoolVault",
+        "params": "lambda args: {'poolName': args.pool, 'teamName': args.team, 'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
+        "help": {
+          "parameters": {
+            "pool": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "vault_version": {
+              "description": "",
+              "required": false,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "update-ceph-cluster-vault": {
+        "endpoint": "UpdateCephClusterVault",
+        "params": "lambda args: {'clusterName': args.cluster, 'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
+        "help": {
+          "parameters": {
+            "cluster": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "vault_version": {
+              "description": "",
+              "required": false,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "delete-ceph-cluster": {
+        "endpoint": "DeleteCephCluster",
+        "params": "lambda args: {'clusterName': args.cluster}",
+        "help": {
+          "parameters": {
+            "cluster": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "delete-ceph-rbd-snapshot": {
+        "endpoint": "DeleteCephRbdSnapshot",
+        "params": "lambda args: {'snapshotName': args.snapshot, 'imageName': args.image, 'poolName': args.pool, 'teamName': args.team}",
+        "help": {
+          "parameters": {
+            "snapshot": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "image": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "pool": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "create-ceph-rbd-snapshot": {
+        "endpoint": "CreateCephRbdSnapshot",
+        "params": "lambda args: {'imageName': args.image, 'poolName': args.pool, 'teamName': args.team, 'snapshotName': args.snapshot, 'vaultContent': args.vault_content}",
+        "help": {
+          "parameters": {
+            "image": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "pool": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "team": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "snapshot": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            },
+            "vault_content": {
+              "description": "",
+              "required": true,
+              "example": "",
+              "type": "string"
+            }
+          }
+        }
       }
     },
     "team": {
       "update-team-vault": {
         "endpoint": "UpdateTeamVault",
-        "params": "lambda args: {'teamName': args.team, 'teamVault': args.vault, 'vaultVersion': args.vault_version}",
+        "params": "lambda args: {'teamName': args.team, 'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
         "success_msg": "Operation completed successfully",
         "help": {
           "parameters": {
@@ -4482,15 +4419,15 @@
               "example": "",
               "type": "string"
             },
-            "vault": {
+            "vault_version": {
               "description": "",
               "required": false,
               "example": "",
               "type": "string"
             },
-            "vault_version": {
+            "vault_content": {
               "description": "",
-              "required": false,
+              "required": true,
               "example": "",
               "type": "string"
             }
