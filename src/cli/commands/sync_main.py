@@ -226,12 +226,12 @@ def perform_rsync(source: str, dest: str, ssh_cmd: str, options: Dict[str, Any],
     return False
 
 def upload(args):
-    print(colorize(f"Uploading from {args.local} to {args.machine}:{args.repo}", 'HEADER'))
+    print(colorize(f"Uploading from {args.local} to {args.machine}:{args.repository}", 'HEADER'))
     source_path = Path(args.local)
     if not source_path.exists(): 
         error_exit(f"Local path '{args.local}' does not exist")
     
-    conn = RepositoryConnection(args.team, args.machine, args.repo); conn.connect()
+    conn = RepositoryConnection(args.team, args.machine, args.repository); conn.connect()
 
     with conn.ssh_context() as ssh_conn:
         ssh_cmd = get_rsync_ssh_command(ssh_conn.ssh_opts)
@@ -247,11 +247,11 @@ def upload(args):
             sys.exit(1)
 
 def download(args):
-    print(colorize(f"Downloading from {args.machine}:{args.repo} to {args.local}", 'HEADER'))
+    print(colorize(f"Downloading from {args.machine}:{args.repository} to {args.local}", 'HEADER'))
     dest_path = Path(args.local)
     dest_path.mkdir(parents=True, exist_ok=True)
     
-    conn = RepositoryConnection(args.team, args.machine, args.repo); conn.connect()
+    conn = RepositoryConnection(args.team, args.machine, args.repository); conn.connect()
 
     with conn.ssh_context() as ssh_conn:
         ssh_cmd = get_rsync_ssh_command(ssh_conn.ssh_opts)
@@ -278,22 +278,22 @@ def main():
         epilog="""
 Examples:
   Upload a folder to repository:
-    %(prog)s upload --token=<GUID> --local=/my/files --machine=server1 --repo=data
+    %(prog)s upload --token=<GUID> --local=/my/files --machine=server1 --repository = data
     
   Download repository to local folder:
-    %(prog)s download --token=<GUID> --machine=server1 --repo=data --local=/backup
+    %(prog)s download --token=<GUID> --machine=server1 --repository = data --local=/backup
     
   Upload with mirror (delete remote files not in local):
-    %(prog)s upload --token=<GUID> --local=/my/files --machine=server1 --repo=data --mirror
+    %(prog)s upload --token=<GUID> --local=/my/files --machine=server1 --repository = data --mirror
     
   Download with checksum verification:
-    %(prog)s download --token=<GUID> --machine=server1 --repo=data --local=/backup --verify
+    %(prog)s download --token=<GUID> --machine=server1 --repository = data --local=/backup --verify
     
   Upload with preview and confirmation:
-    %(prog)s upload --token=<GUID> --local=/my/files --machine=server1 --repo=data --confirm
+    %(prog)s upload --token=<GUID> --local=/my/files --machine=server1 --repository = data --confirm
     
   Download with all options:
-    %(prog)s download --token=<GUID> --machine=server1 --repo=data --local=/backup --mirror --verify --confirm
+    %(prog)s download --token=<GUID> --machine=server1 --repository = data --local=/backup --mirror --verify --confirm
 """
     )
     # Note: --version is only available at root level (rediacc --version)
@@ -311,7 +311,7 @@ Examples:
                                help=f'Local path to {cmd_name} {"from" if cmd_name == "upload" else "to"}')
         
         # Add common arguments
-        add_common_arguments(parser_cmd, include_args=['token', 'team', 'machine', 'repo'])
+        add_common_arguments(parser_cmd, include_args=['token', 'team', 'machine', 'repository'])
         
         # Add sync-specific arguments
         parser_cmd.add_argument('--mirror', action='store_true', help='Delete files not present in source')

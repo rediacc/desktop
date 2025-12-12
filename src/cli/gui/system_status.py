@@ -235,7 +235,7 @@ class SystemStatusChecker:
                                 'local_port': conn_info.get('local_port'),
                                 'team': conn_info.get('team'),
                                 'machine': conn_info.get('machine'),
-                                'repo': conn_info.get('repo')
+                                'repository': conn_info.get('repository')
                             })
                         except OSError:
                             # Process not running
@@ -1045,7 +1045,7 @@ class SystemStatusWindow(BaseWindow):
             info_lines.append(f"\n{i18n.get('active_plugin_connections')}")
             for conn in plugins_data['active_connections']:
                 info_lines.append(f"  ✓ {conn['plugin']} (PID: {conn['pid']}, Port: {conn['local_port']})")
-                info_lines.append(f"    Team: {conn['team']}, Machine: {conn['machine']}, Repo: {conn['repo']}")
+                info_lines.append(f"    Team: {conn['team']}, Machine: {conn['machine']}, Repository: {conn['repository']}")
                 info_lines.append("")
 
         if plugins_data['stale_connections']:
@@ -1245,7 +1245,7 @@ class SystemStatusWindow(BaseWindow):
 
     def test_protocol(self):
         """Test the protocol registration"""
-        test_url = "rediacc://test-token/test-team/test-machine/test-repo/terminal"
+        test_url = "rediacc://test-token/test-team/test-machine/test-repository/terminal"
         messagebox.showinfo("Protocol Test",
                           f"To test the protocol, try opening this URL in your browser:\n\n{test_url}\n\n"
                           f"This should launch the Rediacc CLI terminal (if properly registered).")

@@ -110,21 +110,21 @@ def connect_to_machine(args):
 
 
 def connect_to_terminal(args):
-    print_message('connecting_repository', 'HEADER', repo=args.repo, machine=args.machine)
+    print_message('connecting_repository', 'HEADER', repository=args.repository, machine=args.machine)
 
     from cli.core.shared import validate_machine_accessibility, handle_ssh_exit_code
     from cli.core.config import get_logger
     logger = get_logger(__name__)
 
-    conn = RepositoryConnection(args.team, args.machine, args.repo); conn.connect()
+    conn = RepositoryConnection(args.team, args.machine, args.repository); conn.connect()
     port = conn.connection_info.get('port', 22)
-    validate_machine_accessibility(args.machine, args.team, conn.connection_info['ip'], port, args.repo)
+    validate_machine_accessibility(args.machine, args.team, conn.connection_info['ip'], port, args.repository)
 
     # DEBUG: Log terminal connection details
     logger.debug(f"[connect_to_terminal] Terminal connection details:")
     logger.debug(f"  - Team: {args.team}")
     logger.debug(f"  - Machine: {args.machine}")
-    logger.debug(f"  - Repository: {args.repo}")
+    logger.debug(f"  - Repository: {args.repository}")
     logger.debug(f"  - repo_guid: {conn.repo_guid}")
     logger.debug(f"  - mount_path: {conn.repo_paths['mount_path']}")
 
@@ -143,7 +143,7 @@ def connect_to_terminal(args):
         # Get environment variables using shared module (DRY principle)
         from cli.core.repository_env import get_repository_environment
 
-        env_vars = get_repository_environment(args.team, args.machine, args.repo,
+        env_vars = get_repository_environment(args.team, args.machine, args.repository,
                                               connection_info=conn.connection_info,
                                               repo_paths=conn.repo_paths)
 
@@ -168,7 +168,7 @@ def connect_to_terminal(args):
             extended_cd_logic = get_config_value('cd_logic', 'extended')
             bash_funcs = CONFIG.get('bash_functions', {})
             format_vars = {
-                'repo': args.repo,
+                'repository': args.repository,
                 'team': args.team,
                 'machine': args.machine,
                 'bridge': getattr(args, 'bridge', 'N/A')
@@ -203,13 +203,13 @@ def connect_to_terminal(args):
 
 
 def connect_to_container(args):
-    print_message('connecting_container', 'HEADER', container=args.container, repo=args.repo, machine=args.machine)
+    print_message('connecting_container', 'HEADER', container=args.container, repository=args.repository, machine=args.machine)
 
     from cli.core.shared import validate_machine_accessibility, handle_ssh_exit_code
 
-    conn = RepositoryConnection(args.team, args.machine, args.repo); conn.connect()
+    conn = RepositoryConnection(args.team, args.machine, args.repository); conn.connect()
     port = conn.connection_info.get('port', 22)
-    validate_machine_accessibility(args.machine, args.team, conn.connection_info['ip'], port, args.repo)
+    validate_machine_accessibility(args.machine, args.team, conn.connection_info['ip'], port, args.repository)
 
     ssh_key = get_ssh_key_from_vault(args.team)
     if not ssh_key:
@@ -226,7 +226,7 @@ def connect_to_container(args):
         # Get environment variables using shared module (DRY principle)
         from cli.core.repository_env import get_repository_environment
 
-        env_vars = get_repository_environment(args.team, args.machine, args.repo,
+        env_vars = get_repository_environment(args.team, args.machine, args.repository,
                                               connection_info=conn.connection_info,
                                               repo_paths=conn.repo_paths)
 
@@ -295,9 +295,9 @@ def main():
     # Add common arguments (standard order: token, team, machine, verbose)
     add_common_arguments(parser, include_args=['token', 'team', 'machine', 'verbose'])
     
-    # Add repo separately since it has different requirements
-    parser.add_argument('--repo', help='Target repository name (optional - if not specified, connects to machine only)')
-    parser.add_argument('--container', help='Container name to connect to directly (requires --repo)')
+    # Add repository separately since it has different requirements
+    parser.add_argument('--repository', help='Target repository name (optional - if not specified, connects to machine only)')
+    parser.add_argument('--container', help='Container name to connect to directly (requires --repository)')
     parser.add_argument('--command', help='Command to execute (interactive shell if not specified)')
 
     args = parser.parse_args()
@@ -307,14 +307,14 @@ def main():
     
     if args.verbose: logger.debug("Rediacc CLI Term starting up"); logger.debug(f"Arguments: {vars(args)}")
     if not (args.team and args.machine): parser.error("--team and --machine are required in CLI mode")
-    if args.container and not args.repo: parser.error("--container requires --repo to be specified")
+    if args.container and not args.repository: parser.error("--container requires --repository to be specified")
     
     initialize_cli_command(args, parser)
 
     try:
         if args.container:
             connect_to_container(args)
-        elif args.repo:
+        elif args.repository:
             connect_to_terminal(args)
         else:
             connect_to_machine(args)

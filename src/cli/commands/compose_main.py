@@ -35,7 +35,7 @@ def validate_environment(logger) -> bool:
         print(colorize("Error: This command requires a Rediacc repository environment.", 'RED'))
         print()
         print("Please run inside a repository terminal:")
-        print(colorize("  rediacc term --machine <name> --repo <name>", 'CYAN'))
+        print(colorize("  rediacc term --machine <name> --repository <name>", 'CYAN'))
         print()
         print("The DOCKER_HOST environment variable must be set.")
         return False
@@ -185,7 +185,7 @@ Examples:
   rediacc compose down    Stop services with docker compose down -v
 
 Note: This command must be run inside a Rediacc repository environment.
-Use 'rediacc term --machine <name> --repo <name>' to connect first.
+Use 'rediacc term --machine <name> --repository <name>' to connect first.
         """
     )
 
@@ -195,7 +195,7 @@ Use 'rediacc term --machine <name> --repo <name>' to connect first.
         help='Action to perform: prep (prepare), up (start), or down (stop)'
     )
 
-    # Add only verbose argument (no token/team/machine/repo needed)
+    # Add only verbose argument (no token/team/machine/repository needed)
     # Note: --version is only available at root level (rediacc --version)
     add_common_arguments(parser, include_args=['verbose'])
 

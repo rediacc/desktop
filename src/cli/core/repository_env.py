@@ -15,10 +15,10 @@ logger = get_logger(__name__)
 def get_repository_environment(
     team: str,
     machine: str,
-    repo: str,
+    repository: str,
     connection_info: Optional[Dict] = None,
-    repo_paths: Optional[Dict] = None,
-    repo_info: Optional[Dict] = None
+    repository_paths: Optional[Dict] = None,
+    repository_info: Optional[Dict] = None
 ) -> Dict[str, str]:
     """
     Calculate all repository-specific environment variables.
@@ -29,10 +29,10 @@ def get_repository_environment(
     Args:
         team: Team name
         machine: Machine name
-        repo: Repository name
+        repository: Repository name
         connection_info: Optional connection info dict (to avoid re-fetching)
-        repo_paths: Optional repository paths dict (to avoid re-calculation)
-        repo_info: Optional repository info dict (to avoid re-fetching)
+        repository_paths: Optional repository paths dict (to avoid re-calculation)
+        repository_info: Optional repository info dict (to avoid re-fetching)
 
     Returns:
         Dictionary of environment variable names and values
@@ -40,12 +40,12 @@ def get_repository_environment(
     from .shared import RepositoryConnection, _get_universal_user_info
 
     # Use existing connection info or create new connection
-    if connection_info is None or repo_paths is None or repo_info is None:
-        conn = RepositoryConnection(team, machine, repo)
+    if connection_info is None or repository_paths is None or repository_info is None:
+        conn = RepositoryConnection(team, machine, repository)
         conn.connect()
         connection_info = conn.connection_info
-        repo_paths = conn.repo_paths
-        repo_info = conn.repo_info
+        repository_paths = conn.repository_paths
+        repository_info = conn.repository_info
 
     # Get datastore path from connection info
     datastore_path = connection_info.get('datastore', '') if connection_info else ''
@@ -54,46 +54,46 @@ def get_repository_environment(
     universal_user_name, universal_user_id, company_id = _get_universal_user_info()
 
     # Calculate Docker socket path and host
-    docker_socket = repo_paths['docker_socket']
+    docker_socket = repository_paths['docker_socket']
     docker_host = f"unix://{docker_socket}"
-    repo_mount_path = repo_paths['mount_path']
+    repository_mount_path = repository_paths['mount_path']
 
     # Get repository network ID (defaults to 0 if not present)
-    # Note: API returns 'repoNetworkId' as an integer
-    repo_network_id = repo_info.get('repoNetworkId', 0) if repo_info else 0
+    # Note: API returns 'repositoryNetworkId' as an integer
+    repository_network_id = repository_info.get('repositoryNetworkId') or repository_info.get('repoNetworkId', 0) if repository_info else 0
 
     # Get repository network mode (defaults to bridge if not present)
     # Valid modes: bridge, host, none, overlay, ipvlan, macvlan
-    repo_network_mode = repo_info.get('repoNetworkMode', 'bridge') if repo_info else 'bridge'
+    repository_network_mode = repository_info.get('repositoryNetworkMode') or repository_info.get('repoNetworkMode', 'bridge') if repository_info else 'bridge'
 
     # Get repository tag (defaults to latest if not present)
-    repo_tag = repo_info.get('repoTag', 'latest') if repo_info else 'latest'
+    repository_tag = repository_info.get('repositoryTag') or repository_info.get('repoTag', 'latest') if repository_info else 'latest'
 
     # Build environment variables dictionary
     env_vars = {
-        'DOCKER_DATA': repo_paths['docker_data'],
-        'DOCKER_EXEC': repo_paths['docker_exec'],
-        'DOCKER_FOLDER': repo_paths['docker_folder'],
+        'DOCKER_DATA': repository_paths['docker_data'],
+        'DOCKER_EXEC': repository_paths['docker_exec'],
+        'DOCKER_FOLDER': repository_paths['docker_folder'],
         'DOCKER_HOST': docker_host,
         'DOCKER_PLUGIN_DIR': '/run/docker/plugins',
         'DOCKER_SOCKET': docker_socket,
         'REDIACC_DATASTORE_USER': datastore_path,
         'REDIACC_DESKTOP': sys.executable,
-        'REDIACC_IMMOVABLE': repo_paths['immovable_path'],
+        'REDIACC_IMMOVABLE': repository_paths['immovable_path'],
         'REDIACC_MACHINE': machine,
-        'REDIACC_NETWORK_ID': str(repo_network_id),
-        'REDIACC_REPO': repo,
+        'REDIACC_NETWORK_ID': str(repository_network_id),
+        'REDIACC_REPOSITORY': repository,
         'REDIACC_TEAM': team,
-        'REPO_NETWORK_ID': str(repo_network_id),
-        'REPO_NETWORK_MODE': repo_network_mode,
-        'REPO_PATH': repo_mount_path,
-        'REPO_TAG': repo_tag,
+        'REPOSITORY_NETWORK_ID': str(repository_network_id),
+        'REPOSITORY_NETWORK_MODE': repository_network_mode,
+        'REPOSITORY_PATH': repository_mount_path,
+        'REPOSITORY_TAG': repository_tag,
         'SYSTEM_API_URL': TokenManager.get_api_url() or '',
         'UNIVERSAL_USER_ID': universal_user_id or '',
         'UNIVERSAL_USER_NAME': universal_user_name or '',
     }
 
-    logger.debug(f"[get_repository_environment] Generated environment for {team}/{machine}/{repo}:")
+    logger.debug(f"[get_repository_environment] Generated environment for {team}/{machine}/{repository}:")
     for key, value in env_vars.items():
         logger.debug(f"  {key}={value}")
 

@@ -232,7 +232,7 @@ def launch_vscode_repo(args):
     """Launch VSCode with repository connection"""
     logger = get_logger(__name__)
 
-    print(colorize(f"Connecting to repository '{args.repo}' on machine '{args.machine}'...", 'HEADER'))
+    print(colorize(f"Connecting to repository '{args.repository}' on machine '{args.machine}'...", 'HEADER'))
 
     # Find VSCode executable
     vscode_cmd = find_vscode_executable()
@@ -244,7 +244,7 @@ def launch_vscode_repo(args):
         )
 
     # Connect to repository
-    conn = RepositoryConnection(args.team, args.machine, args.repo)
+    conn = RepositoryConnection(args.team, args.machine, args.repository)
     conn.connect()
 
     # Get universal user info
@@ -255,7 +255,7 @@ def launch_vscode_repo(args):
     )
 
     # Get environment variables using shared module
-    env_vars = get_repository_environment(args.team, args.machine, args.repo,
+    env_vars = get_repository_environment(args.team, args.machine, args.repository,
                                           connection_info=conn.connection_info,
                                           repo_paths=conn.repo_paths)
 
@@ -264,19 +264,19 @@ def launch_vscode_repo(args):
     if not ssh_key:
         error_exit(f"SSH private key not found in vault for team '{args.team}'")
 
-    identity_file_path = ensure_persistent_identity_file(args.team, args.machine, args.repo, ssh_key)
+    identity_file_path = ensure_persistent_identity_file(args.team, args.machine, args.repository, ssh_key)
 
     host_entry = conn.connection_info.get('host_entry')
     if not host_entry:
         error_exit("Security Error: No host key found in machine vault. Contact your administrator to add the host key.")
 
-    known_hosts_file_path = ensure_persistent_known_hosts_file(args.team, args.machine, args.repo, host_entry)
+    known_hosts_file_path = ensure_persistent_known_hosts_file(args.team, args.machine, args.repository, host_entry)
 
     port = conn.connection_info.get('port', 22)
 
     with SSHConnection(ssh_key, host_entry, port, prefer_agent=True) as ssh_conn:
         # Create SSH config entry
-        connection_name = f"rediacc-{sanitize_hostname(args.team)}-{sanitize_hostname(args.machine)}-{sanitize_hostname(args.repo)}"
+        connection_name = f"rediacc-{sanitize_hostname(args.team)}-{sanitize_hostname(args.machine)}-{sanitize_hostname(args.repository)}"
         ssh_host = conn.connection_info['ip']
         ssh_user = conn.connection_info['user']
         ssh_port = port
@@ -348,7 +348,7 @@ def launch_vscode_repo(args):
         cmd = [vscode_cmd, '--folder-uri', vscode_uri]
 
         logger.info(f"Launching VS Code: {' '.join(cmd)}")
-        print(colorize(f"Opening VS Code for repository '{args.repo}'...", 'GREEN'))
+        print(colorize(f"Opening VS Code for repository '{args.repository}'...", 'GREEN'))
 
         result = subprocess.run(cmd)
         return result.returncode
@@ -493,7 +493,7 @@ def main():
         epilog="""
 Examples:
   Connect to repository:
-    %(prog)s --token=<GUID> --team=MyTeam --machine=server1 --repo=myrepo
+    %(prog)s --token=<GUID> --team=MyTeam --machine=server1 --repository = myrepo
 
   Connect to machine only:
     %(prog)s --token=<GUID> --team=MyTeam --machine=server1
@@ -518,8 +518,8 @@ Environment Variables:
     # Add common arguments (standard order: token, team, machine, verbose)
     add_common_arguments(parser, include_args=['token', 'team', 'machine', 'verbose'])
 
-    # Add repo separately since it's optional
-    parser.add_argument('--repo', help='Target repository name (optional - if not specified, connects to machine only)')
+    # Add repository separately since it's optional
+    parser.add_argument('--repository', help='Target repository name (optional - if not specified, connects to machine only)')
 
     args = parser.parse_args()
 
@@ -536,7 +536,7 @@ Environment Variables:
     initialize_cli_command(args, parser)
 
     try:
-        if args.repo:
+        if args.repository:
             return launch_vscode_repo(args)
         else:
             return launch_vscode_machine(args)

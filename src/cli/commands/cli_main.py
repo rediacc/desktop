@@ -650,7 +650,7 @@ class CommandHandler:
                     {
                         "teamName": args.team,
                         "repoName": repo_name,
-                        "repoTag": args.tag,
+                        "repositoryTag": args.tag,
                         "vaultContent": vault_data,
                         "vaultVersion": args.vault_version or 1
                     }

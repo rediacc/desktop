@@ -182,7 +182,7 @@ def get_vault_set_params(args, config_manager=None):
         'machine': {'teamName': args.team, 'machineName': args.name, 'vaultContent': vault_data},
         'region': {'regionName': args.name, 'vaultContent': vault_data},
         'bridge': {'regionName': args.region, 'bridgeName': args.name, 'vaultContent': vault_data},
-        'repository': {'teamName': args.team, 'repoName': args.name, 'repoTag': args.tag, 'vaultContent': vault_data},
+        'repository': {'teamName': args.team, 'repositoryName': args.name, 'repositoryTag': args.tag, 'vaultContent': vault_data},
         'storage': {'teamName': args.team, 'storageName': args.name, 'vaultContent': vault_data},
         'schedule': {'teamName': args.team, 'scheduleName': args.name, 'vaultContent': vault_data},
         'company': {'vaultContent': vault_data}

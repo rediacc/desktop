@@ -111,7 +111,7 @@ def safe_error_message(message: str) -> str:
 # These folder names are constants that must match the values in bridge/cli/scripts/internal.sh
 INTERIM_FOLDER_NAME = 'interim'
 MOUNTS_FOLDER_NAME = 'mounts'
-REPOS_FOLDER_NAME = 'repos'
+REPOSITORIES_FOLDER_NAME = 'repositories'
 IMMOVABLE_FOLDER_NAME = 'immovable'
 
 COLORS = {
@@ -359,7 +359,7 @@ def get_repository_info(team_name: str, repo_name: str) -> Dict[str, Any]:
 
         # DEBUG: Log the repository info to track GUID fields
         logger.debug(f"[get_repository_info] Repository '{repo_name}' API response:")
-        logger.debug(f"  - repoGuid: {repo_info.get('repoGuid', 'NOT_FOUND')}")
+        logger.debug(f"  - repoGuid: {repo_info.get('repositoryGuid') or repo_info.get('repoGuid', 'NOT_FOUND')}")
         logger.debug(f"  - grandGuid: {repo_info.get('grandGuid', 'NOT_FOUND')}")
         logger.debug(f"  - All keys in response: {list(repo_info.keys())}")
 
@@ -899,7 +899,7 @@ def get_repository_paths(repo_guid: str, datastore: str, universal_user_id: str 
 
     paths = {
         'mount_path': f"{base_path}/{MOUNTS_FOLDER_NAME}/{repo_guid}",
-        'image_path': f"{base_path}/{REPOS_FOLDER_NAME}/{repo_guid}",
+        'image_path': f"{base_path}/{REPOSITORIES_FOLDER_NAME}/{repo_guid}",
         'immovable_path': f"{base_path}/{IMMOVABLE_FOLDER_NAME}/{repo_guid}",
         'docker_folder': docker_base,
         'docker_socket': runtime_paths['docker_socket'],
@@ -951,7 +951,7 @@ def add_common_arguments(parser, include_args=None, required_overrides=None):
     Args:
         parser: ArgumentParser or subparser to add arguments to
         include_args: List of argument names to include. If None, includes all.
-                     Valid names: 'token', 'team', 'machine', 'repo', 'verbose'
+                     Valid names: 'token', 'team', 'machine', 'repository', 'verbose'
         required_overrides: Dict mapping argument names to their required status.
                            E.g., {'team': False, 'machine': False} to make them optional
     
@@ -981,8 +981,8 @@ def add_common_arguments(parser, include_args=None, required_overrides=None):
                 'required': True
             }
         },
-        'repo': {
-            'flags': ['--repo'],
+        'repository': {
+            'flags': ['--repository'],
             'kwargs': {
                 'help': 'Repository name',
                 'required': True
@@ -1130,7 +1130,7 @@ class RepositoryConnection:
         self._repo_info = get_repository_info(self._connection_info['team'], self.repo_name)
 
         # DEBUG: Log GUID selection logic
-        repo_guid_field = self._repo_info.get('repoGuid')
+        repo_guid_field = self._repo_info.get('repositoryGuid') or repo_info.get('repoGuid')
         grand_guid_field = self._repo_info.get('grandGuid')
         logger.debug(f"[RepositoryConnection.connect] GUID selection for '{self.repo_name}':")
         logger.debug(f"  - repoGuid field: {repo_guid_field}")
@@ -1141,7 +1141,7 @@ class RepositoryConnection:
             print(colorize(f"Repository info: {json.dumps(self._repo_info, indent=2)}", 'YELLOW'))
             error_exit(f"Repository GUID not found for '{self.repo_name}'")
 
-        logger.debug(f"  - Selected GUID: {repo_guid} (from {'repoGuid' if repo_guid_field else 'grandGuid'})")
+        logger.debug(f"  - Selected GUID: {repo_guid} (from {'repositoryGuid' if repo_guid_field else 'grandGuid'})")
 
         _, universal_user_id, company_id = _get_universal_user_info()
 
@@ -1214,4 +1214,4 @@ class RepositoryConnection:
     
     @property
     def repo_guid(self) -> str:
-        return self._repo_info.get('repoGuid') or self._repo_info.get('grandGuid')
+        return self._repo_info.get('repositoryGuid') or repo_info.get('repoGuid') or self._repo_info.get('grandGuid')

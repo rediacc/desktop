@@ -122,7 +122,7 @@ Examples:
     %(prog)s unregister --system-wide
 
   Handle protocol URL from command line:
-    %(prog)s run "rediacc://repo/open?team=Default&machine=server1&repo=webapp"
+    %(prog)s run "rediacc://repo/open?team=Default&machine=server1&repository = webapp"
 
 Protocol Registration:
   The rediacc:// protocol enables one-click access from the browser to CLI operations.

@@ -555,7 +555,7 @@ class ProtocolUrlParser:
         params = parsed_url["params"]
         
         if not action:
-            # Default to desktop action if no action specified (opens desktop app with team/machine/repo selection)
+            # Default to desktop action if no action specified (opens desktop app with team/machine/repository selection)
             action = "desktop"
             parsed_url["action"] = action  # Update the parsed URL so it's consistent
             logger.info(f"No action specified in URL, defaulting to desktop action")
@@ -570,7 +570,7 @@ class ProtocolUrlParser:
                 raise ValueError(f"Invalid sync direction: {direction}")
             
             cmd.append(direction)
-            cmd.extend(["--token", token, "--team", team, "--machine", machine, "--repo", repository])
+            cmd.extend(["--token", token, "--team", team, "--machine", machine, "--repository", repository])
             
             # Optional sync parameters
             if "localPath" in params:
@@ -584,7 +584,7 @@ class ProtocolUrlParser:
         
         elif action == "terminal":
             cmd = ["term"]
-            cmd.extend(["--token", token, "--team", team, "--machine", machine, "--repo", repository])
+            cmd.extend(["--token", token, "--team", team, "--machine", machine, "--repository", repository])
 
             # Optional terminal parameters
             if "command" in params:
@@ -619,7 +619,7 @@ class ProtocolUrlParser:
         elif action == "plugin":
             # Plugin action might need different handling
             cmd = ["plugin"]
-            cmd.extend(["--token", token, "--team", team, "--machine", machine, "--repo", repository])
+            cmd.extend(["--token", token, "--team", team, "--machine", machine, "--repository", repository])
             
             if "name" in params:
                 cmd.extend(["--plugin", params["name"]])
@@ -632,7 +632,7 @@ class ProtocolUrlParser:
             cmd.extend(["--token", token, "--team", team, "--machine", machine])
             # Only add repository if it's provided and not empty
             if repository and repository.strip():
-                cmd.extend(["--repo", repository])
+                cmd.extend(["--repository", repository])
             # Add container parameters if present
             if "containerId" in params:
                 cmd.extend(["--container-id", params["containerId"]])
@@ -642,7 +642,7 @@ class ProtocolUrlParser:
         elif action == "browser":
             # File browser action - use desktop application
             cmd = ["desktop"]  # Use the desktop application for file browsing
-            cmd.extend(["--token", token, "--team", team, "--machine", machine, "--repo", repository])
+            cmd.extend(["--token", token, "--team", team, "--machine", machine, "--repository", repository])
 
             if "path" in params:
                 cmd.extend(["--path", params["path"]])
@@ -653,7 +653,7 @@ class ProtocolUrlParser:
             cmd.extend(["--token", token, "--team", team, "--machine", machine])
             # Only add repository if it's provided and not empty
             if repository and repository.strip():
-                cmd.extend(["--repo", repository])
+                cmd.extend(["--repository", repository])
             # Optional path parameter for specific directory
             if "path" in params:
                 cmd.extend(["--path", params["path"]])

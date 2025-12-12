@@ -83,15 +83,15 @@ def clean_stale_connections():
             print(colorize(f"Cleaning up stale connection: {conn_id}", 'YELLOW'))
         save_connections(active_connections)
 
-def generate_connection_id(team: str, machine: str, repo: str, plugin: str) -> str:
+def generate_connection_id(team: str, machine: str, repository: str, plugin: str) -> str:
     from hashlib import md5
-    data = f"{team}:{machine}:{repo}:{plugin}:{time.time()}"
+    data = f"{team}:{machine}:{repository}:{plugin}:{time.time()}"
     return md5(data.encode()).hexdigest()[:8]
 
 def list_plugins(args):
-    print(colorize(f"Listing plugins for repository '{args.repo}' on machine '{args.machine}'...", 'HEADER'))
+    print(colorize(f"Listing plugins for repository '{args.repository}' on machine '{args.machine}'...", 'HEADER'))
     
-    conn = RepositoryConnection(args.team, args.machine, args.repo); conn.connect()
+    conn = RepositoryConnection(args.team, args.machine, args.repository); conn.connect()
 
     with conn.ssh_context() as ssh_conn:
         universal_user = conn.connection_info.get('universal_user', 'rediacc')
@@ -130,7 +130,7 @@ def list_plugins(args):
                     print(colorize("  No plugin containers running", 'YELLOW'))
                 
                 connections = load_connections()
-                active_for_repo = [conn_info for conn_info in connections.values() if all([conn_info.get('team') == args.team, conn_info.get('machine') == args.machine, conn_info.get('repo') == args.repo])]
+                active_for_repo = [conn_info for conn_info in connections.values() if all([conn_info.get('team') == args.team, conn_info.get('machine') == args.machine, conn_info.get('repository') == args.repository])]
                 
                 if active_for_repo:
                     print(colorize("\nActive local connections:", 'BLUE'))
@@ -142,7 +142,7 @@ def list_plugins(args):
                 print(colorize(f"Error: {safe_error_message(result.stderr)}", 'RED'))
 
 def connect_plugin(args):
-    print(colorize(f"Connecting to plugin '{args.plugin}' in repository '{args.repo}'...", 'HEADER'))
+    print(colorize(f"Connecting to plugin '{args.plugin}' in repository '{args.repository}'...", 'HEADER'))
     
     clean_stale_connections()
     
@@ -152,7 +152,7 @@ def connect_plugin(args):
          if all([
              conn_info.get('team') == args.team,
              conn_info.get('machine') == args.machine,
-             conn_info.get('repo') == args.repo,
+             conn_info.get('repository') == args.repository,
              conn_info.get('plugin') == args.plugin
          ])),
         None
@@ -173,7 +173,7 @@ def connect_plugin(args):
         if not local_port:
             error_exit("No available ports in range 7111-9111")
     
-    conn = RepositoryConnection(args.team, args.machine, args.repo); conn.connect()
+    conn = RepositoryConnection(args.team, args.machine, args.repository); conn.connect()
 
     # Get SSH key for tunnel connection
     ssh_key = get_ssh_key_from_vault(args.team)
@@ -204,7 +204,7 @@ def connect_plugin(args):
             sys.exit(1)
         
         # Generate connection ID
-        conn_id = generate_connection_id(args.team, args.machine, args.repo, args.plugin)
+        conn_id = generate_connection_id(args.team, args.machine, args.repository, args.plugin)
         control_path = os.path.join(SSH_CONTROL_DIR, f"plugin-{conn_id}")
         
         def check_ssh_unix_support() -> bool:
@@ -300,7 +300,7 @@ def connect_plugin(args):
             'connection_id': conn_id,
             'team': args.team,
             'machine': args.machine,
-            'repo': args.repo,
+            'repository': args.repository,
             'plugin': args.plugin,
             'local_port': local_port,
             'ssh_pid': process.pid,
@@ -334,7 +334,7 @@ def disconnect_plugin(args):
             error_exit(f"Connection ID '{args.connection_id}' not found")
         to_disconnect = [args.connection_id]
     else:
-        to_disconnect = [conn_id for conn_id, conn_info in connections.items() if all([conn_info.get('team') == args.team, conn_info.get('machine') == args.machine, conn_info.get('repo') == args.repo, not args.plugin or conn_info.get('plugin') == args.plugin])]
+        to_disconnect = [conn_id for conn_id, conn_info in connections.items() if all([conn_info.get('team') == args.team, conn_info.get('machine') == args.machine, conn_info.get('repository') == args.repository, not args.plugin or conn_info.get('plugin') == args.plugin])]
     
     if not to_disconnect: print(colorize("No matching connections found", 'YELLOW')); return
     
@@ -382,7 +382,7 @@ def show_status(args):
         port_status = 'Active' if not is_port_available(conn_info['local_port']) else 'Error'
         status_color = 'GREEN' if port_status == 'Active' else 'RED'
         
-        print(f"{conn_id:<10} {conn_info['plugin']:<15} {conn_info['repo']:<15} "
+        print(f"{conn_id:<10} {conn_info['plugin']:<15} {conn_info['repository']:<15} "
               f"{conn_info['machine']:<15} {conn_info['local_port']:<8} "
               f"{colorize(port_status, status_color)}")
     
@@ -401,18 +401,18 @@ def main():
         epilog="""
 Examples:
   List available plugins:
-    %(prog)s list --team="Private Team" --machine=server1 --repo=myrepo
+    %(prog)s list --team="Private Team" --machine=server1 --repository = myrepo
     
   Connect to a plugin:
-    %(prog)s connect --team="Private Team" --machine=server1 --repo=myrepo --plugin=browser
-    %(prog)s connect --team="Private Team" --machine=server1 --repo=myrepo --plugin=terminal --port=9001
+    %(prog)s connect --team="Private Team" --machine=server1 --repository = myrepo --plugin=browser
+    %(prog)s connect --team="Private Team" --machine=server1 --repository = myrepo --plugin=terminal --port=9001
     
   Show connection status:
     %(prog)s status
     
   Disconnect a plugin:
     %(prog)s disconnect --connection-id=abc123
-    %(prog)s disconnect --team="Private Team" --machine=server1 --repo=myrepo --plugin=browser
+    %(prog)s disconnect --team="Private Team" --machine=server1 --repository = myrepo --plugin=browser
 
 Plugin Access:
   Once connected, access plugins via local URLs:
@@ -432,12 +432,12 @@ Plugin Access:
     
     # List command
     list_parser = subparsers.add_parser('list', help='List available plugins in a repository')
-    add_common_arguments(list_parser, include_args=['token', 'team', 'machine', 'repo'])
+    add_common_arguments(list_parser, include_args=['token', 'team', 'machine', 'repository'])
     list_parser.set_defaults(func=list_plugins)
     
     # Connect command
     connect_parser = subparsers.add_parser('connect', help='Connect to a plugin')
-    add_common_arguments(connect_parser, include_args=['token', 'team', 'machine', 'repo'])
+    add_common_arguments(connect_parser, include_args=['token', 'team', 'machine', 'repository'])
     connect_parser.add_argument('--plugin', required=True, help='Plugin name (e.g., browser, terminal)')
     connect_parser.add_argument('--port', type=int, help='Local port to use (auto-assigned if not specified)')
     connect_parser.set_defaults(func=connect_plugin)
@@ -445,8 +445,8 @@ Plugin Access:
     # Disconnect command
     disconnect_parser = subparsers.add_parser('disconnect', help='Disconnect plugin connection(s)')
     disconnect_parser.add_argument('--connection-id', help='Connection ID to disconnect')
-    add_common_arguments(disconnect_parser, include_args=['team', 'machine', 'repo'], 
-                        required_overrides={'team': False, 'machine': False, 'repo': False})
+    add_common_arguments(disconnect_parser, include_args=['team', 'machine', 'repository'], 
+                        required_overrides={'team': False, 'machine': False, 'repository': False})
     disconnect_parser.add_argument('--plugin', help='Plugin name (disconnect all if not specified)')
     disconnect_parser.set_defaults(func=disconnect_plugin)
     

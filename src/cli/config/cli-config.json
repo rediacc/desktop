@@ -289,7 +289,7 @@
       },
       "repository": {
         "endpoint": "CreateRepository",
-        "params": "lambda args: {'teamName': args.team, 'repoName': args.repository, 'vaultContent': args.vault_content, 'parentRepoName': args.parent_repo, 'repoGuid': args.repo_guid, 'networkMode': args.network_mode, 'repoTag': args.repo_tag}",
+        "params": "lambda args: {'teamName': args.team, 'repositoryName': args.repository, 'vaultContent': args.vault_content, 'parentRepositoryName': args.parent_repository, 'repositoryGuid': args.repository_guid, 'networkMode': args.network_mode, 'repositoryTag': args.repository_tag}",
         "success_msg": "Successfully created repository: {name} for team {team}",
         "help": {
           "description": "Create a new repository for code and data storage",
@@ -844,7 +844,7 @@
             "Access rules vary by entity type and user role",
             "Maximum 5,000 records, default 500",
             "Users can view their own history, admins see all",
-            "Team/machine/repo access requires membership",
+            "Team/machine/repository access requires membership",
             "Sensitive operations filtered for non-administrators",
             "Access denial protects entity existence information"
           ]
@@ -1298,7 +1298,7 @@
       },
       "repository": {
         "endpoint": "DeleteRepository",
-        "params": "lambda args: {'teamName': args.team, 'repoName': args.repository, 'repoTag': args.repo_tag}",
+        "params": "lambda args: {'teamName': args.team, 'repositoryName': args.repository, 'repositoryTag': args.repository_tag}",
         "confirm_msg": "Are you sure you want to delete repository '{name}' from team '{team}'?",
         "success_msg": "Successfully deleted repository: {name}",
         "help": {
@@ -1472,7 +1472,7 @@
       "team": {
         "endpoint": "UpdateTeamName",
         "params": "lambda args: {'currentTeamName': args.current_team_name, 'newTeamName': args.new_name}",
-        "success_msg": "Successfully updated team name: {name} → {new_name}",
+        "success_msg": "Successfully updated team name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a team",
           "details": "Changes the name of an existing team. All resources remain associated with the team. References in scripts and configurations must be updated manually.",
@@ -1505,7 +1505,7 @@
       "region": {
         "endpoint": "UpdateRegionName",
         "params": "lambda args: {'currentRegionName': args.current_region_name, 'newRegionName': args.new_name}",
-        "success_msg": "Successfully updated region name: {name} → {new_name}",
+        "success_msg": "Successfully updated region name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a region",
           "details": "Changes the name of an existing region. All bridges within the region remain associated. Update any scripts or configurations that reference the old name.",
@@ -1538,7 +1538,7 @@
       "bridge": {
         "endpoint": "UpdateBridgeName",
         "params": "lambda args: {'regionName': args.region, 'currentBridgeName': args.current_bridge_name, 'newBridgeName': args.new_name}",
-        "success_msg": "Successfully updated bridge name: {name} → {new_name}",
+        "success_msg": "Successfully updated bridge name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a bridge",
           "details": "Changes the name of an existing bridge within a region. Machine assignments remain unchanged. Running bridge processes are not affected.",
@@ -1576,7 +1576,7 @@
       "machine": {
         "endpoint": "UpdateMachineName",
         "params": "lambda args: {'teamName': args.team, 'currentMachineName': args.current_machine_name, 'newMachineName': args.new_name}",
-        "success_msg": "Successfully updated machine name: {name} → {new_name}",
+        "success_msg": "Successfully updated machine name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a machine",
           "details": "Changes the name of an existing machine. The new name must be unique across the entire company. Active queue items continue processing.",
@@ -1614,7 +1614,7 @@
       "machine-bridge": {
         "endpoint": "UpdateMachineAssignedBridge",
         "params": "lambda args: {'teamName': args.team, 'machineName': args.name, 'newBridgeName': args.new_bridge}",
-        "success_msg": "Successfully updated machine bridge: {name} → {new_bridge}",
+        "success_msg": "Successfully updated machine bridge: {name} \u2192 {new_bridge}",
         "help": {
           "description": "Reassign a machine to a different bridge",
           "details": "Changes which bridge processes queue items for a machine. Useful for load balancing, maintenance, or moving machines between regions. Pending queue items remain with the original bridge.",
@@ -1676,8 +1676,8 @@
       },
       "repository": {
         "endpoint": "UpdateRepositoryName",
-        "params": "lambda args: {'teamName': args.team, 'currentRepoName': args.current_repo_name, 'newRepoName': args.new_name}",
-        "success_msg": "Successfully updated repository name: {name} → {new_name}",
+        "params": "lambda args: {'teamName': args.team, 'currentRepositoryName': args.current_repository_name, 'newRepositoryName': args.new_name}",
+        "success_msg": "Successfully updated repository name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a repository",
           "details": "Changes the name of an existing repository within a team. Repository data and configurations are preserved. Update deployment scripts that reference the old name.",
@@ -1714,7 +1714,7 @@
       },
       "repository-vault": {
         "endpoint": "UpdateRepositoryVault",
-        "params": "lambda args: {'teamName': args.team, 'repoName': args.repository, 'repoTag': args.repo_tag, 'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
+        "params": "lambda args: {'teamName': args.team, 'repositoryName': args.repository, 'repositoryTag': args.repository_tag, 'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
         "success_msg": "Successfully updated repository vault: {name}",
         "help": {
           "description": "Update repository configuration vault",
@@ -1767,7 +1767,7 @@
       "storage": {
         "endpoint": "UpdateStorageName",
         "params": "lambda args: {'teamName': args.team, 'currentStorageName': args.current_storage_name, 'newStorageName': args.new_name}",
-        "success_msg": "Successfully updated storage name: {name} → {new_name}",
+        "success_msg": "Successfully updated storage name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a storage resource",
           "details": "Changes the name of an existing storage configuration. The actual storage backend (S3 bucket, Azure container, etc.) is not affected.",
@@ -2711,7 +2711,7 @@
       "update-email": {
         "endpoint": "UpdateUserEmail",
         "params": "lambda args: {'currentUserEmail': args.current_email, 'newUserEmail': args.new_email}",
-        "success_msg": "Successfully updated user email: {current_email} → {new_email}",
+        "success_msg": "Successfully updated user email: {current_email} \u2192 {new_email}",
         "help": {
           "description": "Change a user's email address",
           "details": "Updates a user's email address across the system. The new email becomes the login identifier. All permissions and data are preserved.",
@@ -3405,7 +3405,7 @@
       "repository": {
         "endpoint": "GetTeamRepositories",
         "params": "lambda args: {'teamName': args.team}",
-        "filter": "lambda data, args: [r for r in data if r.get('repoName') == args.name]",
+        "filter": "lambda data, args: [r for r in data if r.get('repositoryName') == args.name]",
         "single_result": true,
         "help": {
           "description": "Get detailed info about a repository",
@@ -4009,7 +4009,7 @@
       },
       "promote-repository-to-grand": {
         "endpoint": "PromoteRepositoryToGrand",
-        "params": "lambda args: {'teamName': args.team, 'repoName': args.repo_name}",
+        "params": "lambda args: {'teamName': args.team, 'repositoryName': args.repository_name}",
         "help": {
           "parameters": {
             "team": {
@@ -4438,7 +4438,7 @@
     "repository": {
       "update-repository-tag": {
         "endpoint": "UpdateRepositoryTag",
-        "params": "lambda args: {'teamName': args.team, 'repoName': args.repo_name, 'currentTag': args.current_tag, 'newTag': args.new_tag}",
+        "params": "lambda args: {'teamName': args.team, 'repositoryName': args.repository_name, 'currentTag': args.current_tag, 'newTag': args.new_tag}",
         "help": {
           "parameters": {
             "team": {
@@ -4524,7 +4524,7 @@
     "workflow": {
       "description": "High-level workflow commands",
       "subcommands": {
-        "repo-create": {
+        "repository-create": {
           "description": "Create and initialize repository on machine",
           "parameters": {
             "team": {
@@ -4575,7 +4575,7 @@
             }
           }
         },
-        "repo-push": {
+        "repository-push": {
           "description": "Push repository with automatic destination creation",
           "parameters": {
             "source-team": {
@@ -4586,7 +4586,7 @@
               "help": "Source machine name",
               "required": true
             },
-            "source-repo": {
+            "source-repository": {
               "help": "Source repository name",
               "required": true
             },
@@ -4599,7 +4599,7 @@
               "help": "Destination team name",
               "required": true
             },
-            "dest-repo": {
+            "dest-repository": {
               "help": "Destination repository name",
               "required": true
             },

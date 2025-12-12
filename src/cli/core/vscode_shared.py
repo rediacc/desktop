@@ -250,7 +250,7 @@ def build_ssh_config_options(ssh_conn, identity_file_path: str, known_hosts_file
     return ssh_opts_lines
 
 
-def ensure_persistent_identity_file(team: str, machine: str, repo: str, ssh_key: str) -> str:
+def ensure_persistent_identity_file(team: str, machine: str, repository: str, ssh_key: str) -> str:
     """
     Persist the SSH private key for VS Code connections and return config-safe path.
     Creates a persistent key file in ~/.ssh/ with appropriate permissions.
@@ -263,8 +263,8 @@ def ensure_persistent_identity_file(team: str, machine: str, repo: str, ssh_key:
         pass
 
     parts = [sanitize_hostname(p) for p in (team, machine) if p]
-    if repo:
-        parts.append(sanitize_hostname(repo))
+    if repository:
+        parts.append(sanitize_hostname(repository))
     key_filename = f"rediacc_{'_'.join(parts)}_key"
     key_path = os.path.join(ssh_dir, key_filename)
 
@@ -292,7 +292,7 @@ def ensure_persistent_identity_file(team: str, machine: str, repo: str, ssh_key:
     return key_path.replace('\\', '/')
 
 
-def ensure_persistent_known_hosts_file(team: str, machine: str, repo: str, host_entry: str) -> str:
+def ensure_persistent_known_hosts_file(team: str, machine: str, repository: str, host_entry: str) -> str:
     """
     Persist the host key for VS Code connections and return config-safe path.
     Creates a persistent known_hosts file in ~/.ssh/ with appropriate permissions.
@@ -305,8 +305,8 @@ def ensure_persistent_known_hosts_file(team: str, machine: str, repo: str, host_
         pass
 
     parts = [sanitize_hostname(p) for p in (team, machine) if p]
-    if repo:
-        parts.append(sanitize_hostname(repo))
+    if repository:
+        parts.append(sanitize_hostname(repository))
     known_hosts_filename = f"rediacc_{'_'.join(parts)}_known_hosts"
     known_hosts_path = os.path.join(ssh_dir, known_hosts_filename)
 

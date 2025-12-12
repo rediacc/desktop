@@ -725,11 +725,11 @@ class DualPaneFileBrowser:
             # Connect if all selections are made
             team = self.main_window.team_combo.get()
             machine = self.main_window.machine_combo.get()
-            repo = self.main_window.repo_combo.get()
+            repository = self.main_window.repo_combo.get()
 
             if (team and not self.main_window._is_placeholder_value(team, 'select_team') and
                 machine and not self.main_window._is_placeholder_value(machine, 'select_machine') and
-                repo and not self.main_window._is_placeholder_value(repo, 'select_repository')):
+                repo and not self.main_window._is_placeholder_value(repository, 'select_repository')):
                 # Update button to connecting state immediately
                 self.connect_button.config(text=i18n.get('connecting'), state='disabled')
                 # Connect
@@ -743,11 +743,11 @@ class DualPaneFileBrowser:
         """Connect to remote repository"""
         team = self.main_window.team_combo.get()
         machine = self.main_window.machine_combo.get()
-        repo = self.main_window.repo_combo.get()
+        repository = self.main_window.repo_combo.get()
         
-        if not all([team, machine, repo]):
+        if not all([team, machine, repository]):
             messagebox.showerror(i18n.get('error'), 
-                               i18n.get('select_team_machine_repo'))
+                               i18n.get('select_team_machine_repository'))
             return
         
         # Connect button is now in main window
@@ -757,7 +757,7 @@ class DualPaneFileBrowser:
         def do_connect():
             try:
                 # Create repository connection
-                conn = RepositoryConnection(team, machine, repo)
+                conn = RepositoryConnection(team, machine, repository)
                 conn.connect()
 
                 # Assign to self only after successful connection
@@ -771,7 +771,7 @@ class DualPaneFileBrowser:
                     self.logger.debug(f"[FileBrowser.connect_remote] Connection established:")
                     self.logger.debug(f"  - Team: {team}")
                     self.logger.debug(f"  - Machine: {machine}")
-                    self.logger.debug(f"  - Repository: {repo}")
+                    self.logger.debug(f"  - Repository: {repository}")
                     self.logger.debug(f"  - Assigned mount_path: {self.remote_current_path}")
                     self.logger.debug(f"  - repo_guid: {self.ssh_connection.repo_guid}")
                 else:
@@ -794,7 +794,7 @@ class DualPaneFileBrowser:
         info_dict = {
             'team': getattr(self.ssh_connection, 'team_name', 'Unknown'),
             'machine': getattr(self.ssh_connection, 'machine_name', 'Unknown'),
-            'repo': getattr(self.ssh_connection, 'repo_name', 'Unknown'),
+            'repository': getattr(self.ssh_connection, 'repo_name', 'Unknown'),
             'path': self.remote_current_path
         }
         self.main_window.update_connection_status(True, info_dict)
@@ -870,12 +870,12 @@ class DualPaneFileBrowser:
         if not self.ssh_connection:
             team = self.main_window.team_combo.get()
             machine = self.main_window.machine_combo.get()
-            repo = self.main_window.repo_combo.get()
+            repository = self.main_window.repo_combo.get()
 
             # Validate selections are not placeholder values
             if (team and not self.main_window._is_placeholder_value(team, 'select_team') and
                 machine and not self.main_window._is_placeholder_value(machine, 'select_machine') and
-                repo and not self.main_window._is_placeholder_value(repo, 'select_repository')):
+                repo and not self.main_window._is_placeholder_value(repository, 'select_repository')):
                 # Update button to connecting state immediately
                 self.connect_button.config(text=i18n.get('connecting'), state='disabled')
                 self.connect_remote()
@@ -1270,13 +1270,13 @@ class DualPaneFileBrowser:
 
         team = self.main_window.team_combo.get()
         machine = self.main_window.machine_combo.get()
-        repo = self.main_window.repo_combo.get()
+        repository = self.main_window.repo_combo.get()
 
         # Enable Connect button only if we have valid selections
         has_valid_selection = (
             team and not self.main_window._is_placeholder_value(team, 'select_team') and
             machine and not self.main_window._is_placeholder_value(machine, 'select_machine') and
-            repo and not self.main_window._is_placeholder_value(repo, 'select_repository')
+            repo and not self.main_window._is_placeholder_value(repository, 'select_repository')
         )
 
         self.connect_button.config(state='normal' if has_valid_selection else 'disabled')
@@ -2639,18 +2639,18 @@ class DualPaneFileBrowser:
 
         # For remote files, we need to use the main window's VS Code functionality
         if source == 'remote' and hasattr(self.main_window, '_launch_vscode'):
-            # Get current team, machine, and repo from main window
+            # Get current team, machine, and repository from main window
             team = self.main_window.team_combo.get()
             machine = self.main_window.machine_combo.get()
-            repo = self.main_window.repo_combo.get()
+            repository = self.main_window.repo_combo.get()
 
-            if not all([team, machine, repo]):
+            if not all([team, machine, repository]):
                 messagebox.showerror('Error', 'Please select team, machine, and repository first')
                 return
 
             # Launch VS Code connected to the repository
             # The specific file will be accessible in the repository folder
-            self.main_window._launch_vscode(team, machine, repo)
+            self.main_window._launch_vscode(team, machine, repository)
         elif source == 'local':
             # For local files, open directly with VS Code
             if hasattr(self.main_window, 'find_vscode_executable'):
@@ -2699,17 +2699,17 @@ class DualPaneFileBrowser:
     def open_repository_in_vscode(self):
         """Open the repository in VS Code"""
         if hasattr(self.main_window, '_launch_vscode'):
-            # Get current team, machine, and repo from main window
+            # Get current team, machine, and repository from main window
             team = self.main_window.team_combo.get()
             machine = self.main_window.machine_combo.get()
-            repo = self.main_window.repo_combo.get()
+            repository = self.main_window.repo_combo.get()
 
-            if not all([team, machine, repo]):
+            if not all([team, machine, repository]):
                 messagebox.showerror('Error', 'Please select team, machine, and repository first')
                 return
 
             # Launch VS Code connected to the repository
-            self.main_window._launch_vscode(team, machine, repo)
+            self.main_window._launch_vscode(team, machine, repository)
 
     def show_transfer_options(self):
         """Show transfer options dialog"""

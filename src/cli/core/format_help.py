@@ -43,7 +43,7 @@ def get_help_data() -> dict:
     """Get help data from help_generator.py"""
     try:
         # Try to find help_generator.py relative to this file
-        # Works for both development (repo) and installed (PyPI) scenarios
+        # Works for both development (repository) and installed (PyPI) scenarios
         help_gen = Path(__file__).parent / "help_generator.py"
 
         if not help_gen.exists():

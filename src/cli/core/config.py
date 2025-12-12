@@ -1907,7 +1907,7 @@ class TerminalDetector:
         
         This implementation prefers the installed rediacc.exe (from pip entry points),
         and falls back to local development scripts if available, without relying on
-        a repo-local rediacc.bat which may not exist in installed environments.
+        a repository-local rediacc.bat which may not exist in installed environments.
         """
         import subprocess
         import sys as _sys
@@ -1932,7 +1932,7 @@ class TerminalDetector:
                 if os.path.exists(rediacc_bat):
                     launcher_cmd = f'"{rediacc_bat}" {command}'
                 elif os.path.exists(cli_main_py):
-                    # Invoke via the current Python interpreter against the repo sources
+                    # Invoke via the current Python interpreter against the repository sources
                     launcher_cmd = f'"{_sys.executable}" "{cli_main_py}" {command}'
                 else:
                     # 3) Last resort: module invocation (works for pip-installed package)
@@ -2227,8 +2227,8 @@ class TerminalDetector:
             self.logger.debug(f"Using rediacc from PATH: {rediacc_in_path}")
             return f'"{rediacc_in_path}" {command}'
 
-        # 2) Check for local development script (in parent of cli_dir, i.e., repo root)
-        repo_root = os.path.dirname(cli_dir)  # cli_dir is typically /path/to/repo/src
+        # 2) Check for local development script (in parent of cli_dir, i.e., repository root)
+        repo_root = os.path.dirname(cli_dir)  # cli_dir is typically /path/to/repository/src
         local_rediacc = os.path.join(repo_root, 'rediacc')
         if os.path.exists(local_rediacc) and os.access(local_rediacc, os.X_OK):
             self.logger.debug(f"Using local development rediacc: {local_rediacc}")

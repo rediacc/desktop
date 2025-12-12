@@ -90,7 +90,7 @@ from cli.gui.utilities import (
 class MainWindow(BaseWindow):
     """Main window with Terminal and File Sync tools"""
     
-    def __init__(self, preselected_token=None, preselected_team=None, preselected_machine=None, preselected_repo=None, preselected_container_id=None, preselected_container_name=None):
+    def __init__(self, preselected_token=None, preselected_team=None, preselected_machine=None, preselected_repository=None, preselected_container_id=None, preselected_container_name=None):
         title = i18n.get('app_title')
         if __version__ != 'dev':
             title += f' v{__version__}'
@@ -102,7 +102,7 @@ class MainWindow(BaseWindow):
         self.preselected_token = preselected_token
         self.preselected_team = preselected_team
         self.preselected_machine = preselected_machine
-        self.preselected_repo = preselected_repo
+        self.preselected_repository = preselected_repository
         self.preselected_container_id = preselected_container_id
         self.preselected_container_name = preselected_container_name
         
@@ -192,7 +192,7 @@ class MainWindow(BaseWindow):
         self.root.after(100, self.load_initial_data)
 
         # Set up preselection flag to trigger after initial load
-        self._preselection_pending = bool(self.preselected_team or self.preselected_machine or self.preselected_repo)
+        self._preselection_pending = bool(self.preselected_team or self.preselected_machine or self.preselected_repository)
         
         # Start auto-refresh for plugin connections
         self.auto_refresh_connections()
@@ -200,16 +200,16 @@ class MainWindow(BaseWindow):
         # Load plugins if we have a complete valid selection
         team = self.team_combo.get()
         machine = self.machine_combo.get()
-        repo = self.repo_combo.get()
+        repository = self.repository_combo.get()
         
         has_valid_selection = (
             team and not self._is_placeholder_value(team, 'select_team') and
             machine and not self._is_placeholder_value(machine, 'select_machine') and
-            repo and not self._is_placeholder_value(repo, 'select_repository')
+            repo and not self._is_placeholder_value(repository, 'select_repository')
         )
         
         if has_valid_selection:
-            current_selection = (team, machine, repo)
+            current_selection = (team, machine, repository)
             self.refresh_plugins()
             self.refresh_connections()
             self.plugins_loaded_for = current_selection
@@ -300,7 +300,7 @@ class MainWindow(BaseWindow):
             return []
 
         machine_data = self.machines_data[machine_name]
-        repos = []
+        repositories = []
 
         if machine_data.get('vaultStatus'):
             try:
@@ -311,7 +311,7 @@ class MainWindow(BaseWindow):
                         for repo in result_data['repositories']:
                             repo_guid = repo.get('name')  # This is actually the GUID
                             if repo_guid:
-                                repos.append({
+                                repositories.append({
                                     'guid': repo_guid,
                                     'size': repo.get('size_human', 'Unknown'),
                                     'mounted': repo.get('mounted', False)
@@ -319,7 +319,7 @@ class MainWindow(BaseWindow):
             except (json.JSONDecodeError, KeyError, TypeError) as e:
                 self.logger.error(f"Failed to parse vaultStatus for machine {machine_name}: {e}")
 
-        return repos
+        return repositories
 
     def _get_repo_name_mapping(self, team):
         """Get mapping from repository GUID to human-readable name"""
@@ -334,10 +334,10 @@ class MainWindow(BaseWindow):
         try:
             response = self.api_client.token_request('GetTeamRepositories', {'teamName': team})
             if not response.get('error') and response.get('resultSets') and len(response['resultSets']) > 1:
-                repos_data = response['resultSets'][1].get('data', [])
-                for repo in repos_data:
-                    repo_guid = repo.get('repoGuid') or repo.get('grandGuid')
-                    repo_name = self._get_name(repo, 'repositoryName', 'name', 'repoName')
+                repositories_data = response['resultSets'][1].get('data', [])
+                for repo in repositories_data:
+                    repo_guid = repo.get('repositoryGuid') or repo.get('repoGuid') or repo.get('grandGuid')
+                    repo_name = self._get_name(repository, 'repositoryName', 'name', 'repoName')
                     if repo_guid and repo_name:
                         mapping[repo_guid] = repo_name
         except Exception as e:
@@ -347,15 +347,15 @@ class MainWindow(BaseWindow):
         self._repo_name_cache[team] = mapping
         return mapping
 
-    def _map_repo_guids_to_names(self, repos, team):
+    def _map_repository_guids_to_names(self, repositories, team):
         """Convert repository GUIDs to human-readable names"""
-        if not repos:
+        if not repositories:
             return []
 
         name_mapping = self._get_repo_name_mapping(team)
         result = []
 
-        for repo in repos:
+        for repo in repositories:
             repo_guid = repo['guid']
             human_name = name_mapping.get(repo_guid, repo_guid)  # Fallback to GUID
             result.append({
@@ -645,7 +645,7 @@ class MainWindow(BaseWindow):
         vscode_menu.add_command(
             label='VS Code Repository',
             accelerator='Ctrl+Shift+V',
-            command=self.open_vscode_repo
+            command=self.open_vscode_repository
         )
 
         vscode_menu.add_command(
@@ -682,7 +682,7 @@ class MainWindow(BaseWindow):
         self.root.bind_all('<Control-Alt-t>', lambda e: self.open_container_terminal())
         self.root.bind_all('<Control-Shift-T>', lambda e: self.open_machine_terminal())
         self.root.bind_all('<Control-k>', lambda e: self.show_quick_command())
-        self.root.bind_all('<Control-Shift-V>', lambda e: self.open_vscode_repo())
+        self.root.bind_all('<Control-Shift-V>', lambda e: self.open_vscode_repository())
         self.root.bind_all('<Control-Alt-v>', lambda e: self.open_vscode_machine())
         self.root.bind_all('<Control-Shift-O>', lambda e: self.show_transfer_options_wrapper())
         self.root.bind_all('<Control-i>', lambda e: self.show_system_status())
@@ -697,12 +697,12 @@ class MainWindow(BaseWindow):
         # Get current selection
         team = self.team_combo.get()
         machine = self.machine_combo.get()
-        repo = self.repo_combo.get()
+        repository = self.repository_combo.get()
         
         # Check if all required fields are selected
         has_selection = (team and not self._is_placeholder_value(team, 'select_team') and
                         machine and not self._is_placeholder_value(machine, 'select_machine') and
-                        repo and not self._is_placeholder_value(repo, 'select_repository'))
+                        repo and not self._is_placeholder_value(repository, 'select_repository'))
         
         if not has_selection:
             # Add disabled message when no selection
@@ -895,11 +895,11 @@ class MainWindow(BaseWindow):
         self.machine_combo.bind('<<ComboboxSelected>>', lambda e: self.on_machine_changed())
         create_tooltip(self.machine_combo, i18n.get('machine_tooltip'))
         
-        self.repo_combo = ttk.Combobox(self.resource_frame, state='readonly')
-        self.repo_combo.set(i18n.get('select_repository'))
-        self.repo_combo.grid(row=1, column=2, sticky='ew', padx=(5, 5), pady=(0, 5))
-        self.repo_combo.bind('<<ComboboxSelected>>', lambda e: self.on_repository_changed())
-        create_tooltip(self.repo_combo, i18n.get('repo_tooltip'))
+        self.repository_combo = ttk.Combobox(self.resource_frame, state='readonly')
+        self.repository_combo.set(i18n.get('select_repository'))
+        self.repository_combo.grid(row=1, column=2, sticky='ew', padx=(5, 5), pady=(0, 5))
+        self.repository_combo.bind('<<ComboboxSelected>>', lambda e: self.on_repository_changed())
+        create_tooltip(self.repository_combo, i18n.get('repo_tooltip'))
 
         self.container_combo = ttk.Combobox(self.resource_frame, state='readonly')
         self.container_combo.set(i18n.get('select_container'))
@@ -907,8 +907,8 @@ class MainWindow(BaseWindow):
         self.container_combo.bind('<<ComboboxSelected>>', lambda e: self.on_container_changed())
         create_tooltip(self.container_combo, i18n.get('container_tooltip'))
         
-        # Hidden repo filter label (for backward compatibility)
-        self.repo_filter_label = tk.Label(self.resource_frame, text="", font=('Arial', 9), fg='gray')
+        # Hidden repository filter label (for backward compatibility)
+        self.repository_filter_label = tk.Label(self.resource_frame, text="", font=('Arial', 9), fg='gray')
         
         # Plugin toolbar - create BEFORE status bar
         self.create_plugin_toolbar()
@@ -1119,11 +1119,11 @@ class MainWindow(BaseWindow):
             if info_dict:
                 team = info_dict.get('team', 'Unknown')
                 machine = info_dict.get('machine', 'Unknown')
-                repo = info_dict.get('repo', 'Unknown')
+                repository = info_dict.get('repository', 'Unknown')
                 
                 # Update status bar
-                status_text = f"🟢 Connected to {team}/{machine}/{repo}"
-                tooltip = f"Team: {team}\nMachine: {machine}\nRepository: {repo}\nPath: {info_dict.get('path', '/')}"
+                status_text = f"🟢 Connected to {team}/{machine}/{repository}"
+                tooltip = f"Team: {team}\nMachine: {machine}\nRepository: {repository}\nPath: {info_dict.get('path', '/')}"
             else:
                 status_text = "🟢 Connected"
                 tooltip = "Connected to remote"
@@ -1292,7 +1292,7 @@ class MainWindow(BaseWindow):
             info = f"Connection Details:\n\n"
             info += f"Team: {self.team_combo.get()}\n"
             info += f"Machine: {self.machine_combo.get()}\n"
-            info += f"Repository: {self.repo_combo.get()}\n"
+            info += f"Repository: {self.repository_combo.get()}\n"
             messagebox.showinfo("Connection Details", info)
         else:
             messagebox.showinfo("Not Connected", 
@@ -1338,10 +1338,10 @@ class MainWindow(BaseWindow):
         """Check if current selection can establish SSH connection"""
         team = self.team_combo.get()
         machine = self.machine_combo.get()
-        repo = self.repo_combo.get()
+        repository = self.repository_combo.get()
 
-        # Must have team, machine, and repo selected
-        if not all([team, machine, repo]) or any(x in [i18n.get('select_team'), i18n.get('select_machine'), i18n.get('select_repository')] for x in [team, machine, repo]):
+        # Must have team, machine, and repository selected
+        if not all([team, machine, repository]) or any(x in [i18n.get('select_team'), i18n.get('select_machine'), i18n.get('select_repository')] for x in [team, machine, repository]):
             return False
 
         try:
@@ -1395,7 +1395,7 @@ class MainWindow(BaseWindow):
                 self.connection_details = {
                     'team': self.team_combo.get(),
                     'machine': self.machine_combo.get(),
-                    'repo': self.repo_combo.get()
+                    'repository': self.repository_combo.get()
                 }
             else:
                 self.connection_details = {}
@@ -1427,8 +1427,8 @@ class MainWindow(BaseWindow):
             self.root.after(500, self._apply_preselected_machine)
 
         # Apply repository selection (after machine is loaded)
-        if self.preselected_repo and self.preselected_team and self.preselected_machine:
-            self.root.after(1000, self._apply_preselected_repo)
+        if self.preselected_repository and self.preselected_team and self.preselected_machine:
+            self.root.after(1000, self._apply_preselected_repository)
 
         self._preselection_pending = False
 
@@ -1443,16 +1443,16 @@ class MainWindow(BaseWindow):
             else:
                 self.logger.warning(f"Preselected machine '{self.preselected_machine}' not found in available machines")
 
-    def _apply_preselected_repo(self):
+    def _apply_preselected_repository(self):
         """Apply preselected repository after machine data is loaded"""
-        if self.preselected_repo:
-            current_values = list(self.repo_combo['values']) if self.repo_combo['values'] else []
-            if self.preselected_repo in current_values:
-                self.repo_combo.set(self.preselected_repo)
+        if self.preselected_repository:
+            current_values = list(self.repository_combo['values']) if self.repository_combo['values'] else []
+            if self.preselected_repository in current_values:
+                self.repository_combo.set(self.preselected_repository)
                 self.on_repository_changed()
-                self.logger.info(f"Applied preselected repository: {self.preselected_repo}")
+                self.logger.info(f"Applied preselected repository: {self.preselected_repository}")
             else:
-                self.logger.warning(f"Preselected repository '{self.preselected_repo}' not found in available repositories")
+                self.logger.warning(f"Preselected repository '{self.preselected_repository}' not found in available repositories")
     
     def load_teams(self):
         """Load available teams"""
@@ -1515,16 +1515,16 @@ class MainWindow(BaseWindow):
         # Check if we have valid selections (not placeholders)
         team = self.team_combo.get()
         machine = self.machine_combo.get()
-        repo = self.repo_combo.get()
+        repository = self.repository_combo.get()
         
         has_valid_selection = (
             team and not self._is_placeholder_value(team, 'select_team') and
             machine and not self._is_placeholder_value(machine, 'select_machine') and
-            repo and not self._is_placeholder_value(repo, 'select_repository')
+            repo and not self._is_placeholder_value(repository, 'select_repository')
         )
         
         if has_valid_selection:
-            current_selection = (team, machine, repo)
+            current_selection = (team, machine, repository)
             self.refresh_plugins()
             self.refresh_connections()
             self.load_containers()
@@ -1609,7 +1609,7 @@ class MainWindow(BaseWindow):
         # Clear repositories if no machine selected
         if not machine or self._is_placeholder_value(machine, 'select_machine'):
             self.update_repositories([])
-            self.repo_filter_label.config(text="")
+            self.repository_filter_label.config(text="")
             return
 
         self.activity_status_label.config(text=i18n.get('loading_repositories', team=team))
@@ -1620,19 +1620,19 @@ class MainWindow(BaseWindow):
 
             if machine_repos:
                 # Map GUIDs to human-readable names
-                repos_with_names = self._map_repo_guids_to_names(machine_repos, team)
-                repo_names = [repo['name'] for repo in repos_with_names]
+                repositories_with_names = self._map_repository_guids_to_names(machine_repos, team)
+                repository_names = [repo['name'] for repo in repositories_with_names]
 
                 # Update UI with machine-specific repositories
-                self.update_repositories(repo_names)
-                self.repo_filter_label.config(text="(machine-specific)", fg=COLOR_SUCCESS)
-                status_text = f"Showing {len(repo_names)} repositories for machine '{machine}'"
+                self.update_repositories(repository_names)
+                self.repository_filter_label.config(text="(machine-specific)", fg=COLOR_SUCCESS)
+                status_text = f"Showing {len(repository_names)} repositories for machine '{machine}'"
                 self.activity_status_label.config(text=status_text, fg=COLOR_SUCCESS)
                 self.root.after(3000, lambda: self.update_activity_status())
             else:
                 # No repositories found on this machine
                 self.update_repositories([])
-                self.repo_filter_label.config(text="(no repositories)", fg='#666666')
+                self.repository_filter_label.config(text="(no repositories)", fg='#666666')
                 self.activity_status_label.config(text=f"No repositories found on machine '{machine}'", fg='#666666')
                 self.root.after(3000, lambda: self.update_activity_status())
 
@@ -1642,15 +1642,15 @@ class MainWindow(BaseWindow):
             if not self._handle_api_error(error_msg):
                 self.activity_status_label.config(text=f"{i18n.get('error')}: {error_msg}", fg=COLOR_ERROR)
     
-    def update_repositories(self, repos: list):
+    def update_repositories(self, repositories: list):
         """Update repository dropdown"""
-        self.repo_combo['values'] = repos
-        if repos:
-            self.repo_combo.set(i18n.get('select_repository'))
+        self.repository_combo['values'] = repositories
+        if repositories:
+            self.repository_combo.set(i18n.get('select_repository'))
         else:
-            self.repo_combo.set(i18n.get('select_repository'))
-        # Clear the filter label when no repos
-        self.repo_filter_label.config(text="")
+            self.repository_combo.set(i18n.get('select_repository'))
+        # Clear the filter label when no repositories
+        self.repository_filter_label.config(text="")
         # Also trigger change event to clear plugins
         self.on_repository_changed()
         self.update_activity_status()
@@ -1659,11 +1659,11 @@ class MainWindow(BaseWindow):
         """Load containers for selected repository"""
         team = self.team_combo.get()
         machine = self.machine_combo.get()
-        repo = self.repo_combo.get()
+        repository = self.repository_combo.get()
 
         # Validate inputs
-        if not all([team, machine, repo]) or any(self._is_placeholder_value(x, f'select_{t}')
-                                               for x, t in [(team, 'team'), (machine, 'machine'), (repo, 'repository')]):
+        if not all([team, machine, repository]) or any(self._is_placeholder_value(x, f'select_{t}')
+                                               for x, t in [(team, 'team'), (machine, 'machine'), (repository, 'repository')]):
             self.update_containers([])
             return
 
@@ -1674,7 +1674,7 @@ class MainWindow(BaseWindow):
         try:
             from cli.core.shared import RepositoryConnection, get_ssh_key_from_vault, SSHConnection
 
-            conn = RepositoryConnection(team, machine, repo)
+            conn = RepositoryConnection(team, machine, repository)
             conn.connect()
 
             ssh_key = get_ssh_key_from_vault(team)
@@ -1770,29 +1770,29 @@ class MainWindow(BaseWindow):
     
     def open_repo_terminal(self):
         """Open interactive repository terminal in new window"""
-        team, machine, repo = self.team_combo.get(), self.machine_combo.get(), self.repo_combo.get()
+        team, machine, repository = self.team_combo.get(), self.machine_combo.get(), self.repository_combo.get()
 
-        if not all([team, machine, repo]):
-            messagebox.showerror(i18n.get('error'), i18n.get('select_team_machine_repo'))
+        if not all([team, machine, repository]):
+            messagebox.showerror(i18n.get('error'), i18n.get('select_team_machine_repository'))
             return
 
-        command = f'term --team "{team}" --machine "{machine}" --repo "{repo}"'
+        command = f'term --team "{team}" --machine "{machine}" --repository "{repository}"'
         self._launch_terminal(command, i18n.get('an_interactive_repo_terminal'))
 
     def open_container_terminal(self):
         """Open interactive container terminal in new window"""
-        team, machine, repo = self.team_combo.get(), self.machine_combo.get(), self.repo_combo.get()
+        team, machine, repository = self.team_combo.get(), self.machine_combo.get(), self.repository_combo.get()
         container = self.container_combo.get()
 
-        if not all([team, machine, repo]):
-            messagebox.showerror(i18n.get('error'), i18n.get('select_team_machine_repo'))
+        if not all([team, machine, repository]):
+            messagebox.showerror(i18n.get('error'), i18n.get('select_team_machine_repository'))
             return
 
         if not container or self._is_placeholder_value(container, 'select_container'):
             messagebox.showerror(i18n.get('error'), i18n.get('select_container_first'))
             return
 
-        command = f'term --team "{team}" --machine "{machine}" --repo "{repo}" --container "{container}"'
+        command = f'term --team "{team}" --machine "{machine}" --repository "{repository}" --container "{container}"'
         self._launch_terminal(command, i18n.get('an_interactive_container_terminal'))
 
     def open_machine_terminal(self):
@@ -1806,7 +1806,7 @@ class MainWindow(BaseWindow):
         command = f'term --team "{team}" --machine "{machine}"'
         self._launch_terminal(command, i18n.get('an_interactive_machine_terminal'))
 
-    def _launch_vscode(self, team: str, machine: str, repo: str = None):
+    def _launch_vscode(self, team: str, machine: str, repository: str = None):
         """Launch VS Code with SSH remote connection"""
         vscode_cmd = find_vscode_executable()
         if not vscode_cmd:
@@ -1822,14 +1822,14 @@ class MainWindow(BaseWindow):
 
         def launch():
             try:
-                # Get universal user info for both repo and machine connections
+                # Get universal user info for both repository and machine connections
                 from cli.core.shared import _get_universal_user_info
                 universal_user_name, universal_user_id, company_id = _get_universal_user_info()
                 universal_user = resolve_universal_user(fallback_value=universal_user_name)
 
-                if repo:
+                if repository:
                     # Repository connection - use RepositoryConnection
-                    connection = RepositoryConnection(team, machine, repo)
+                    connection = RepositoryConnection(team, machine, repository)
                     connection.connect()
                     universal_user = resolve_universal_user(
                         connection.connection_info.get('universal_user'),
@@ -1837,8 +1837,8 @@ class MainWindow(BaseWindow):
                     )
 
                     remote_path = connection.repo_paths['mount_path']
-                    connection_name = f"rediacc-{sanitize_hostname(team)}-{sanitize_hostname(machine)}-{sanitize_hostname(repo)}"
-                    description = f"VS Code Repository: {repo} on {machine}"
+                    connection_name = f"rediacc-{sanitize_hostname(team)}-{sanitize_hostname(machine)}-{sanitize_hostname(repository)}"
+                    description = f"VS Code Repository: {repository} on {machine}"
 
                     # Use RepositoryConnection's SSH context
                     ssh_context = connection.ssh_context(prefer_agent=True)
@@ -1860,7 +1860,7 @@ class MainWindow(BaseWindow):
                     if not ssh_key:
                         raise Exception(f"SSH private key not found in vault for team '{team}'")
 
-                    # Universal user info already retrieved above for both repo and machine connections
+                    # Universal user info already retrieved above for both repository and machine connections
 
                     # Calculate datastore path like terminal does (datastore is now direct, no user isolation)
                     remote_path = connection_info['datastore']
@@ -1875,13 +1875,13 @@ class MainWindow(BaseWindow):
                     ssh_user = connection_info['user']
 
                 # Get SSH key for persistent file
-                if repo:
-                    # For repo connection, get key from connection object
+                if repository:
+                    # For repository connection, get key from connection object
                     ssh_key = connection._ssh_key
                 # else: ssh_key is already defined for machine-only connection
 
                 # Create persistent SSH key file using shared function
-                persistent_key_path = ensure_persistent_identity_file(team, machine, repo, ssh_key)
+                persistent_key_path = ensure_persistent_identity_file(team, machine, repository, ssh_key)
                 self.logger.debug(f"Created persistent SSH key at: {persistent_key_path}")
                 
                 # Create SSH config entry using persistent key
@@ -1897,9 +1897,9 @@ class MainWindow(BaseWindow):
                     # Get environment variables using shared module (DRY principle)
                     from cli.core.repository_env import get_repository_environment, get_machine_environment, format_ssh_setenv
 
-                    if repo:
+                    if repository:
                         # Repository connection - get repository-specific environment
-                        env_vars = get_repository_environment(team, machine, repo,
+                        env_vars = get_repository_environment(team, machine, repository,
                                                               connection_info=connection.connection_info,
                                                               repo_paths=connection.repo_paths)
                     else:
@@ -1909,7 +1909,7 @@ class MainWindow(BaseWindow):
 
                     # Get datastore path for shared VS Code server location
                     # Note: This must be calculated before ensure_vscode_env_setup so env files go to correct location
-                    if repo:
+                    if repository:
                         datastore_path = connection.connection_info.get('datastore')
                     else:
                         datastore_path = connection_info.get('datastore')
@@ -2016,15 +2016,15 @@ class MainWindow(BaseWindow):
         # Run in background thread to avoid blocking GUI
         threading.Thread(target=launch, daemon=True).start()
 
-    def open_vscode_repo(self):
+    def open_vscode_repository(self):
         """Open VS Code connected to repository via SSH"""
-        team, machine, repo = self.team_combo.get(), self.machine_combo.get(), self.repo_combo.get()
+        team, machine, repository = self.team_combo.get(), self.machine_combo.get(), self.repository_combo.get()
 
-        if not all([team, machine, repo]):
-            messagebox.showerror(i18n.get('error'), i18n.get('select_team_machine_repo'))
+        if not all([team, machine, repository]):
+            messagebox.showerror(i18n.get('error'), i18n.get('select_team_machine_repository'))
             return
 
-        self._launch_vscode(team, machine, repo)
+        self._launch_vscode(team, machine, repository)
 
     def open_vscode_machine(self):
         """Open VS Code connected to machine via SSH"""
@@ -2041,19 +2041,19 @@ class MainWindow(BaseWindow):
         """Refresh available plugins for selected repository"""
         team = self.team_combo.get()
         machine = self.machine_combo.get()
-        repo = self.repo_combo.get()
+        repository = self.repository_combo.get()
         
-        if not all([team, machine, repo]):
-            messagebox.showerror(i18n.get('error'), i18n.get('select_team_machine_repo'))
+        if not all([team, machine, repository]):
+            messagebox.showerror(i18n.get('error'), i18n.get('select_team_machine_repository'))
             return
         
         # Update the selection we're loading plugins for
-        self.plugins_loaded_for = (team, machine, repo)
+        self.plugins_loaded_for = (team, machine, repository)
         
         self.activity_status_label.config(text=i18n.get('loading_plugins'))
         
         def load():
-            cmd = ['plugin', 'list', '--team', team, '--machine', machine, '--repo', repo]
+            cmd = ['plugin', 'list', '--team', team, '--machine', machine, '--repository', repository]
             self.logger.debug(f"Executing plugin list command: {' '.join(cmd)}")
             
             result = self.runner.run_command(cmd)
@@ -2128,7 +2128,7 @@ class MainWindow(BaseWindow):
                         connections.append({
                             'id': parts[0],
                             'plugin': parts[1],
-                            'repo': parts[2],
+                            'repository': parts[2],
                             'machine': parts[3],
                             'port': parts[4],
                             'status': parts[5]
@@ -2200,12 +2200,12 @@ class MainWindow(BaseWindow):
         # Check if we have a valid selection to refresh
         team = self.team_combo.get()
         machine = self.machine_combo.get()
-        repo = self.repo_combo.get()
+        repository = self.repository_combo.get()
         
         has_valid_selection = (
             team and not self._is_placeholder_value(team, 'select_team') and
             machine and not self._is_placeholder_value(machine, 'select_machine') and
-            repo and not self._is_placeholder_value(repo, 'select_repository')
+            repo and not self._is_placeholder_value(repository, 'select_repository')
         )
         
         if has_valid_selection:
@@ -2547,9 +2547,9 @@ class MainWindow(BaseWindow):
         """Connect to a plugin from the menu"""
         team = self.team_combo.get()
         machine = self.machine_combo.get()
-        repo = self.repo_combo.get()
+        repository = self.repository_combo.get()
         
-        if not all([team, machine, repo, plugin_name]):
+        if not all([team, machine, repository, plugin_name]):
             # Unlock if it was locked by connect_plugin_from_toolbar
             if plugin_name in self.active_operations:
                 self.unlock_plugin_operation(plugin_name)
@@ -2560,7 +2560,7 @@ class MainWindow(BaseWindow):
         def connect():
             # Build command
             cmd = ['plugin', 'connect', '--team', team, '--machine', machine, 
-                   '--repo', repo, '--plugin', plugin_name]
+                   '--repository', repository, '--plugin', plugin_name]
             
             # Don't specify port, let it auto-assign
             
@@ -2586,7 +2586,7 @@ class MainWindow(BaseWindow):
                     
                     self.plugin_connections[plugin_name] = {
                         'url': url,
-                        'conn_id': conn_id or f"{team}/{machine}/{repo}/{plugin_name}"
+                        'conn_id': conn_id or f"{team}/{machine}/{repository}/{plugin_name}"
                     }
                 
                 # Safe UI update wrapper
@@ -2639,12 +2639,12 @@ class MainWindow(BaseWindow):
             if 'conn_id' in conn_info:
                 cmd = ['plugin', 'disconnect', '--connection-id', conn_info['conn_id']]
             else:
-                # Fallback to disconnect by team/machine/repo/plugin
+                # Fallback to disconnect by team/machine/repository/plugin
                 team = self.team_combo.get()
                 machine = self.machine_combo.get()
-                repo = self.repo_combo.get()
+                repository = self.repository_combo.get()
                 cmd = ['plugin', 'disconnect', '--team', team, '--machine', machine,
-                       '--repo', repo, '--plugin', plugin_name]
+                       '--repository', repository, '--plugin', plugin_name]
             
             result = self.runner.run_command(cmd)
             
@@ -2805,7 +2805,7 @@ class MainWindow(BaseWindow):
         # Repository info
         tk.Label(info_frame, text=i18n.get('repository'), 
                 font=('Arial', 10, 'bold')).grid(row=5, column=0, sticky='w', pady=5)
-        tk.Label(info_frame, text=self.repo_combo.get()).grid(row=5, column=1, sticky='w', pady=5)
+        tk.Label(info_frame, text=self.repository_combo.get()).grid(row=5, column=1, sticky='w', pady=5)
         
         # Machine
         tk.Label(info_frame, text=i18n.get('machine'), 
@@ -2831,14 +2831,14 @@ class MainWindow(BaseWindow):
                 # Disconnect without locking (we already locked)
                 team = self.team_combo.get()
                 machine = self.machine_combo.get()
-                repo = self.repo_combo.get()
+                repository = self.repository_combo.get()
                 
                 # Build disconnect command
                 if 'conn_id' in conn_info:
                     cmd = ['plugin', 'disconnect', '--connection-id', conn_info['conn_id']]
                 else:
                     cmd = ['plugin', 'disconnect', '--team', team, '--machine', machine,
-                           '--repo', repo, '--plugin', plugin_name]
+                           '--repository', repository, '--plugin', plugin_name]
                 
                 result = self.runner.run_command(cmd)
                 
@@ -2979,9 +2979,9 @@ class MainWindow(BaseWindow):
         # Check if we have a connection
         team = self.team_combo.get()
         machine = self.machine_combo.get()
-        repo = self.repo_combo.get()
+        repository = self.repository_combo.get()
 
-        if not all([team, machine, repo]):
+        if not all([team, machine, repository]):
             messagebox.showerror('Error', 'Please select team, machine, and repository first')
             return
 
@@ -3195,7 +3195,7 @@ Version: 1.0.0
         # Update resource selection placeholders
         self._update_combo_placeholder(self.team_combo, 'select_team')
         self._update_combo_placeholder(self.machine_combo, 'select_machine')
-        self._update_combo_placeholder(self.repo_combo, 'select_repository')
+        self._update_combo_placeholder(self.repository_combo, 'select_repository')
         self._update_combo_placeholder(self.container_combo, 'select_container')
         
         # Update labels
@@ -3259,8 +3259,8 @@ Version: 1.0.0
         # Check if we have a valid selection
         has_team = bool(self.team_combo.get())
         has_machine = bool(self.machine_combo.get())
-        has_repo = bool(self.repo_combo.get())
-        has_full_selection = has_team and has_machine and has_repo
+        has_repository = bool(self.repository_combo.get())
+        has_full_selection = has_team and has_machine and has_repository
 
         # Check for machine accessibility (for machine-only operations)
         machine_accessible = self._check_machine_accessibility()
@@ -3358,12 +3358,12 @@ Version: 1.0.0
         # Parse connection string (format: "Team/Machine/Repo")
         parts = connection_string.split('/')
         if len(parts) == 3:
-            team, machine, repo = parts
+            team, machine, repository = parts
             self.team_combo.set(team)
             self.on_team_changed()
             self.machine_combo.set(machine)
             self.on_machine_changed()
-            self.repo_combo.set(repo)
+            self.repository_combo.set(repository)
             self.on_repository_changed()
     
     # Plugin tab texts update method removed - plugin manager is now in Tools menu
@@ -3477,7 +3477,7 @@ def launch_gui():
     parser.add_argument('--token', type=str, help='API token for authentication')
     parser.add_argument('--team', type=str, help='Team name to pre-select')
     parser.add_argument('--machine', type=str, help='Machine name to pre-select')
-    parser.add_argument('--repo', type=str, help='Repository name to pre-select')
+    parser.add_argument('--repository', type=str, help='Repository name to pre-select')
     parser.add_argument('--container-id', type=str, help='Container ID to pre-select')
     parser.add_argument('--container-name', type=str, help='Container name to pre-select')
     args = parser.parse_args()
@@ -3551,7 +3551,7 @@ def launch_gui():
                 preselected_token=args.token,
                 preselected_team=args.team,
                 preselected_machine=args.machine,
-                preselected_repo=args.repo,
+                preselected_repository=args.repository,
                 preselected_container_id=getattr(args, 'container_id', None),
                 preselected_container_name=getattr(args, 'container_name', None)
             )
@@ -3579,7 +3579,7 @@ def launch_gui():
                 preselected_token=args.token,
                 preselected_team=args.team,
                 preselected_machine=args.machine,
-                preselected_repo=args.repo,
+                preselected_repository=args.repository,
                 preselected_container_id=getattr(args, 'container_id', None),
                 preselected_container_name=getattr(args, 'container_name', None)
             )
