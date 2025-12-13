@@ -127,8 +127,8 @@ $ psql -d mydb
 When accessing a repository, these environment variables are available:
 
 ```bash
-REPO_NAME          # Current repository name
-REPO_PATH          # Repository root path
+REPOSITORY_NAME    # Current repository name
+REPOSITORY_PATH    # Repository root path
 MACHINE_NAME       # Current machine name
 TEAM_NAME          # Current team name
 DOCKER_CONTAINER   # Container name (if applicable)
@@ -137,9 +137,9 @@ DOCKER_CONTAINER   # Container name (if applicable)
 Example usage:
 ```bash
 rediacc-term --machine server --repo webapp
-$ echo $REPO_NAME      # webapp
-$ echo $REPO_PATH      # /app
-$ cd $REPO_PATH
+$ echo $REPOSITORY_NAME  # webapp
+$ echo $REPOSITORY_PATH  # /app
+$ cd $REPOSITORY_PATH
 ```
 
 ## Helper Functions

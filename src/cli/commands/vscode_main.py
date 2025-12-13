@@ -500,7 +500,7 @@ Examples:
 
 Environment Variables:
   When connected to a repository, the following variables are automatically set:
-    REPO_PATH        - Repository filesystem path
+    REPOSITORY_PATH  - Repository filesystem path
     DOCKER_HOST      - Docker daemon connection
     DOCKER_SOCKET    - Docker runtime socket path
     DOCKER_FOLDER    - Docker configuration folder
