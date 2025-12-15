@@ -53,14 +53,14 @@ def get_repository_environment(
     # Get universal user info
     universal_user_name, universal_user_id, company_id = _get_universal_user_info()
 
-    # Calculate Docker socket path and host
-    docker_socket = repository_paths['docker_socket']
+    # Get repository network ID from API
+    repository_network_id = repository_info.get('repositoryNetworkId') or repository_info.get('repoNetworkId', 0) if repository_info else 0
+
+    # Docker socket path uses renet format: /var/run/rediacc/docker-{network_id}.sock
+    docker_socket = f"/var/run/rediacc/docker-{repository_network_id}.sock"
+    docker_exec = f"/var/run/rediacc/docker-{repository_network_id}"
     docker_host = f"unix://{docker_socket}"
     repository_mount_path = repository_paths['mount_path']
-
-    # Get repository network ID (defaults to 0 if not present)
-    # Note: API returns 'repositoryNetworkId' as an integer
-    repository_network_id = repository_info.get('repositoryNetworkId') or repository_info.get('repoNetworkId', 0) if repository_info else 0
 
     # Get repository network mode (defaults to bridge if not present)
     # Valid modes: bridge, host, none, overlay, ipvlan, macvlan
@@ -72,7 +72,7 @@ def get_repository_environment(
     # Build environment variables dictionary
     env_vars = {
         'DOCKER_DATA': repository_paths['docker_data'],
-        'DOCKER_EXEC': repository_paths['docker_exec'],
+        'DOCKER_EXEC': docker_exec,
         'DOCKER_FOLDER': repository_paths['docker_folder'],
         'DOCKER_HOST': docker_host,
         'DOCKER_PLUGIN_DIR': '/run/docker/plugins',
