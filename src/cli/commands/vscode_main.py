@@ -104,6 +104,8 @@ def ensure_vscode_env_setup(
 
         setup_dir = pathlib.Path(server_install_path) / ".vscode-server"
         setup_dir.mkdir(parents=True, exist_ok=True)
+        # Set 775 permissions so ssh_user can write during VS Code SCP setup
+        os.chmod(setup_dir, stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH)
 
         # Get target user's uid/gid for chown
         target_uid = None
@@ -118,6 +120,9 @@ def ensure_vscode_env_setup(
 
         # Permission: owner rw, group/other read
         FILE_PERMS = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
+        # Directory permission: owner rwx, group rwx, other rx (775)
+        # Group write needed so ssh_user can write during VS Code's initial SCP setup
+        DIR_PERMS = stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH
 
         # Track paths for ownership fix at end
         paths_to_chown = [setup_dir]
@@ -160,10 +165,12 @@ def ensure_vscode_env_setup(
         if need_sudo and target_user and terminal_command:
             data_dir = setup_dir / "data"
             data_dir.mkdir(parents=True, exist_ok=True)
+            os.chmod(data_dir, DIR_PERMS)
             paths_to_chown.append(data_dir)
 
             machine_dir = data_dir / "Machine"
             machine_dir.mkdir(parents=True, exist_ok=True)
+            os.chmod(machine_dir, DIR_PERMS)
             paths_to_chown.append(machine_dir)
 
             settings_file = machine_dir / "settings.json"
@@ -257,7 +264,7 @@ def launch_vscode_repo(args):
     # Get environment variables using shared module
     env_vars = get_repository_environment(args.team, args.machine, args.repository,
                                           connection_info=conn.connection_info,
-                                          repo_paths=conn.repo_paths)
+                                          repository_paths=conn.repo_paths)
 
     # Get SSH key
     ssh_key = get_ssh_key_from_vault(args.team)

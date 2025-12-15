@@ -780,7 +780,17 @@ def handle_protocol_url(url: str, is_protocol_call: bool = False) -> int:
 
                         # Build the rediacc command with proper quoting for shell
                         # Arguments with spaces (like team names) need to be quoted
-                        rediacc_cmd = ' '.join(shlex.quote(arg) for arg in cmd_args)
+                        # On Windows, use double quotes; on Unix, use shlex.quote (single quotes)
+                        if sys.platform == 'win32':
+                            def win_quote(arg):
+                                """Quote argument for Windows CMD - use double quotes"""
+                                if ' ' in arg or '"' in arg or any(c in arg for c in '&|<>^'):
+                                    # Escape internal double quotes and wrap in double quotes
+                                    return '"' + arg.replace('"', '""') + '"'
+                                return arg
+                            rediacc_cmd = ' '.join(win_quote(arg) for arg in cmd_args)
+                        else:
+                            rediacc_cmd = ' '.join(shlex.quote(arg) for arg in cmd_args)
                         logger.info(f"Launching terminal for command: {rediacc_cmd}")
 
                         # Detect best terminal
