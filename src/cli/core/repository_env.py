@@ -44,8 +44,8 @@ def get_repository_environment(
         conn = RepositoryConnection(team, machine, repository)
         conn.connect()
         connection_info = conn.connection_info
-        repository_paths = conn.repository_paths
-        repository_info = conn.repository_info
+        repository_paths = conn.repo_paths
+        repository_info = conn.repo_info
 
     # Get datastore path from connection info
     datastore_path = connection_info.get('datastore', '') if connection_info else ''

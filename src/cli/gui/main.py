@@ -205,7 +205,7 @@ class MainWindow(BaseWindow):
         has_valid_selection = (
             team and not self._is_placeholder_value(team, 'select_team') and
             machine and not self._is_placeholder_value(machine, 'select_machine') and
-            repo and not self._is_placeholder_value(repository, 'select_repository')
+            repository and not self._is_placeholder_value(repository, 'select_repository')
         )
         
         if has_valid_selection:
@@ -337,7 +337,7 @@ class MainWindow(BaseWindow):
                 repositories_data = response['resultSets'][1].get('data', [])
                 for repo in repositories_data:
                     repo_guid = repo.get('repositoryGuid') or repo.get('repoGuid') or repo.get('grandGuid')
-                    repo_name = self._get_name(repository, 'repositoryName', 'name', 'repoName')
+                    repo_name = self._get_name(repo, 'repositoryName', 'name', 'repoName')
                     if repo_guid and repo_name:
                         mapping[repo_guid] = repo_name
         except Exception as e:
@@ -702,7 +702,7 @@ class MainWindow(BaseWindow):
         # Check if all required fields are selected
         has_selection = (team and not self._is_placeholder_value(team, 'select_team') and
                         machine and not self._is_placeholder_value(machine, 'select_machine') and
-                        repo and not self._is_placeholder_value(repository, 'select_repository'))
+                        repository and not self._is_placeholder_value(repository, 'select_repository'))
         
         if not has_selection:
             # Add disabled message when no selection
@@ -1520,7 +1520,7 @@ class MainWindow(BaseWindow):
         has_valid_selection = (
             team and not self._is_placeholder_value(team, 'select_team') and
             machine and not self._is_placeholder_value(machine, 'select_machine') and
-            repo and not self._is_placeholder_value(repository, 'select_repository')
+            repository and not self._is_placeholder_value(repository, 'select_repository')
         )
         
         if has_valid_selection:
@@ -1901,7 +1901,7 @@ class MainWindow(BaseWindow):
                         # Repository connection - get repository-specific environment
                         env_vars = get_repository_environment(team, machine, repository,
                                                               connection_info=connection.connection_info,
-                                                              repo_paths=connection.repo_paths)
+                                                              repository_paths=connection.repo_paths)
                     else:
                         # Machine-only connection
                         env_vars = get_machine_environment(team, machine,
@@ -2205,7 +2205,7 @@ class MainWindow(BaseWindow):
         has_valid_selection = (
             team and not self._is_placeholder_value(team, 'select_team') and
             machine and not self._is_placeholder_value(machine, 'select_machine') and
-            repo and not self._is_placeholder_value(repository, 'select_repository')
+            repository and not self._is_placeholder_value(repository, 'select_repository')
         )
         
         if has_valid_selection:

@@ -725,11 +725,11 @@ class DualPaneFileBrowser:
             # Connect if all selections are made
             team = self.main_window.team_combo.get()
             machine = self.main_window.machine_combo.get()
-            repository = self.main_window.repo_combo.get()
+            repository = self.main_window.repository_combo.get()
 
             if (team and not self.main_window._is_placeholder_value(team, 'select_team') and
                 machine and not self.main_window._is_placeholder_value(machine, 'select_machine') and
-                repo and not self.main_window._is_placeholder_value(repository, 'select_repository')):
+                repository and not self.main_window._is_placeholder_value(repository, 'select_repository')):
                 # Update button to connecting state immediately
                 self.connect_button.config(text=i18n.get('connecting'), state='disabled')
                 # Connect
@@ -743,7 +743,7 @@ class DualPaneFileBrowser:
         """Connect to remote repository"""
         team = self.main_window.team_combo.get()
         machine = self.main_window.machine_combo.get()
-        repository = self.main_window.repo_combo.get()
+        repository = self.main_window.repository_combo.get()
         
         if not all([team, machine, repository]):
             messagebox.showerror(i18n.get('error'), 
@@ -870,12 +870,12 @@ class DualPaneFileBrowser:
         if not self.ssh_connection:
             team = self.main_window.team_combo.get()
             machine = self.main_window.machine_combo.get()
-            repository = self.main_window.repo_combo.get()
+            repository = self.main_window.repository_combo.get()
 
             # Validate selections are not placeholder values
             if (team and not self.main_window._is_placeholder_value(team, 'select_team') and
                 machine and not self.main_window._is_placeholder_value(machine, 'select_machine') and
-                repo and not self.main_window._is_placeholder_value(repository, 'select_repository')):
+                repository and not self.main_window._is_placeholder_value(repository, 'select_repository')):
                 # Update button to connecting state immediately
                 self.connect_button.config(text=i18n.get('connecting'), state='disabled')
                 self.connect_remote()
@@ -1270,13 +1270,13 @@ class DualPaneFileBrowser:
 
         team = self.main_window.team_combo.get()
         machine = self.main_window.machine_combo.get()
-        repository = self.main_window.repo_combo.get()
+        repository = self.main_window.repository_combo.get()
 
         # Enable Connect button only if we have valid selections
         has_valid_selection = (
             team and not self.main_window._is_placeholder_value(team, 'select_team') and
             machine and not self.main_window._is_placeholder_value(machine, 'select_machine') and
-            repo and not self.main_window._is_placeholder_value(repository, 'select_repository')
+            repository and not self.main_window._is_placeholder_value(repository, 'select_repository')
         )
 
         self.connect_button.config(state='normal' if has_valid_selection else 'disabled')
@@ -2642,7 +2642,7 @@ class DualPaneFileBrowser:
             # Get current team, machine, and repository from main window
             team = self.main_window.team_combo.get()
             machine = self.main_window.machine_combo.get()
-            repository = self.main_window.repo_combo.get()
+            repository = self.main_window.repository_combo.get()
 
             if not all([team, machine, repository]):
                 messagebox.showerror('Error', 'Please select team, machine, and repository first')
@@ -2702,7 +2702,7 @@ class DualPaneFileBrowser:
             # Get current team, machine, and repository from main window
             team = self.main_window.team_combo.get()
             machine = self.main_window.machine_combo.get()
-            repository = self.main_window.repo_combo.get()
+            repository = self.main_window.repository_combo.get()
 
             if not all([team, machine, repository]):
                 messagebox.showerror('Error', 'Please select team, machine, and repository first')
