@@ -21,6 +21,26 @@ from .config import get_logger, get_config_file
 
 logger = get_logger(__name__)
 
+
+def win_quote(arg: str) -> str:
+    """Quote argument for Windows CMD - use double quotes.
+
+    On Windows, single quotes (from shlex.quote) don't work in CMD.
+    This function uses double quotes for arguments containing spaces
+    or special characters.
+
+    Args:
+        arg: The command line argument to quote
+
+    Returns:
+        The quoted argument suitable for Windows CMD
+    """
+    if ' ' in arg or '"' in arg or any(c in arg for c in '&|<>^'):
+        # Escape internal double quotes and wrap in double quotes
+        return '"' + arg.replace('"', '""') + '"'
+    return arg
+
+
 class ProtocolHandlerError(Exception):
     """Protocol handler specific errors"""
     pass
@@ -782,12 +802,6 @@ def handle_protocol_url(url: str, is_protocol_call: bool = False) -> int:
                         # Arguments with spaces (like team names) need to be quoted
                         # On Windows, use double quotes; on Unix, use shlex.quote (single quotes)
                         if sys.platform == 'win32':
-                            def win_quote(arg):
-                                """Quote argument for Windows CMD - use double quotes"""
-                                if ' ' in arg or '"' in arg or any(c in arg for c in '&|<>^'):
-                                    # Escape internal double quotes and wrap in double quotes
-                                    return '"' + arg.replace('"', '""') + '"'
-                                return arg
                             rediacc_cmd = ' '.join(win_quote(arg) for arg in cmd_args)
                         else:
                             rediacc_cmd = ' '.join(shlex.quote(arg) for arg in cmd_args)
