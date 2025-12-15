@@ -264,7 +264,8 @@ def launch_vscode_repo(args):
     # Get environment variables using shared module
     env_vars = get_repository_environment(args.team, args.machine, args.repository,
                                           connection_info=conn.connection_info,
-                                          repository_paths=conn.repo_paths)
+                                          repository_paths=conn.repo_paths,
+                                          repository_info=conn.repo_info)
 
     # Get SSH key
     ssh_key = get_ssh_key_from_vault(args.team)

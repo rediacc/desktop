@@ -1901,7 +1901,8 @@ class MainWindow(BaseWindow):
                         # Repository connection - get repository-specific environment
                         env_vars = get_repository_environment(team, machine, repository,
                                                               connection_info=connection.connection_info,
-                                                              repository_paths=connection.repo_paths)
+                                                              repository_paths=connection.repo_paths,
+                                                              repository_info=connection.repo_info)
                     else:
                         # Machine-only connection
                         env_vars = get_machine_environment(team, machine,

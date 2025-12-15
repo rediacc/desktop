@@ -145,7 +145,8 @@ def connect_to_terminal(args):
 
         env_vars = get_repository_environment(args.team, args.machine, args.repository,
                                               connection_info=conn.connection_info,
-                                              repository_paths=conn.repo_paths)
+                                              repository_paths=conn.repo_paths,
+                                              repository_info=conn.repo_info)
 
         cd_logic = get_config_value('cd_logic', 'basic')
         
@@ -228,7 +229,8 @@ def connect_to_container(args):
 
         env_vars = get_repository_environment(args.team, args.machine, args.repository,
                                               connection_info=conn.connection_info,
-                                              repository_paths=conn.repo_paths)
+                                              repository_paths=conn.repo_paths,
+                                              repository_info=conn.repo_info)
 
         universal_user = conn.connection_info.get('universal_user', 'rediacc')
         ssh_cmd = ['ssh', '-tt', *ssh_conn.ssh_opts.split(), conn.ssh_destination]
