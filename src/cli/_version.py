@@ -6,7 +6,7 @@ It is imported by setup.py and can be updated programmatically
 during the build process.
 """
 
-__version__ = "0.2.131"
+__version__ = "0.2.138"
 
 def _parse_version(version_string):
     """Parse version string, handling development versions gracefully."""
