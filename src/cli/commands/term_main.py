@@ -178,7 +178,7 @@ def connect_to_terminal(args):
             commands = CONFIG.get('repository_welcome', {}).get('commands', [])
             welcome_lines = [cmd.format(**format_vars) for cmd in commands]
             functions = '\n\n'.join(bash_funcs.values())
-            exports = 'export -f enter_container\nexport -f logs\nexport -f status'
+            exports = 'export -f enter_container\nexport -f logs\nexport -f status\nexport -f rediacc_prompt'
 
             script_sections = [extended_cd_logic]
             if functions:
@@ -188,6 +188,25 @@ def connect_to_terminal(args):
             if welcome_lines:
                 script_sections.append('')
                 script_sections.extend(welcome_lines)
+
+            # Write rediacc_prompt function and PROMPT_COMMAND to ~/.bashrc-rediacc
+            # This file is sourced at the END of ~/.bashrc, so it overrides PS1
+            rediacc_prompt_func = bash_funcs.get('rediacc_prompt', '')
+            bashrc_rediacc_content = f'''# Rediacc prompt configuration - auto-generated
+{rediacc_prompt_func}
+
+# Initialize direnv hook if direnv is available
+if command -v direnv &> /dev/null; then
+    eval "$(direnv hook bash)"
+fi
+
+export PROMPT_COMMAND='_direnv_hook 2>/dev/null; rediacc_prompt'
+rediacc_prompt  # Set initial prompt
+'''
+            # Escape for shell and write to file
+            escaped_content = bashrc_rediacc_content.replace("'", "'\"'\"'")
+            script_sections.append('')
+            script_sections.append(f"echo '{escaped_content}' > ~/.bashrc-rediacc")
             script_sections.append('')
             script_sections.append(f"export PS1='{ps1_prompt}'")
             script_sections.append('exec bash')
