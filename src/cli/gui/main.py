@@ -1457,9 +1457,9 @@ class MainWindow(BaseWindow):
     def load_teams(self):
         """Load available teams"""
         self.update_activity_status()
-        
+
         # Direct API call to get teams
-        response = self.api_client.token_request('GetCompanyTeams', {})
+        response = self.api_client.token_request('GetOrganizationTeams', {})
         
         if response.get('error'):
             error_msg = response.get('error', i18n.get('failed_to_load_teams'))
@@ -1824,7 +1824,7 @@ class MainWindow(BaseWindow):
             try:
                 # Get universal user info for both repository and machine connections
                 from cli.core.shared import _get_universal_user_info
-                universal_user_name, universal_user_id, company_id = _get_universal_user_info()
+                universal_user_name, universal_user_id, organization_id = _get_universal_user_info()
                 universal_user = resolve_universal_user(fallback_value=universal_user_name)
 
                 if repository:

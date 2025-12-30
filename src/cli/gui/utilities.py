@@ -155,7 +155,7 @@ def check_token_validity() -> bool:
         # Test token with a simple API call
         # Ensure client has config manager for token rotation
         client.ensure_config_manager()
-        response = client.token_request('GetCompanyTeams', {})
+        response = client.token_request('GetOrganizationTeams', {})
         
         if response.get('error'):
             logger.debug(f"Token validation failed: {response.get('error', 'Unknown error')}")

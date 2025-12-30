@@ -88,7 +88,7 @@ rediacc config set default_team "Production"
 rediacc config set output_format "json"
 
 # Set custom API URL
-rediacc config set api_url "https://api.company.internal"
+rediacc config set api_url "https://api.organization.internal"
 ```
 
 ### Reset Configuration
@@ -170,7 +170,7 @@ Create wrapper scripts for common configurations:
 
 export REDIACC_DEFAULT_TEAM="Production"
 export REDIACC_OUTPUT_FORMAT="json"
-export SYSTEM_API_URL="https://prod-api.company.com"
+export SYSTEM_API_URL="https://prod-api.organization.com"
 
 exec rediacc "$@"
 ```
@@ -205,14 +205,14 @@ export REDIACC_CA_BUNDLE="/path/to/ca-bundle.crt"
 
 ```bash
 # HTTP proxy
-export HTTP_PROXY="http://proxy.company.com:8080"
-export HTTPS_PROXY="http://proxy.company.com:8080"
+export HTTP_PROXY="http://proxy.organization.com:8080"
+export HTTPS_PROXY="http://proxy.organization.com:8080"
 
 # Proxy with authentication
-export HTTPS_PROXY="http://user:pass@proxy.company.com:8080"
+export HTTPS_PROXY="http://user:pass@proxy.organization.com:8080"
 
 # No proxy for internal
-export NO_PROXY="localhost,127.0.0.1,.company.internal"
+export NO_PROXY="localhost,127.0.0.1,.organization.internal"
 ```
 
 ## Debugging Configuration

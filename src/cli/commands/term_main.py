@@ -90,7 +90,7 @@ def connect_to_machine(args):
         
         ssh_cmd = ['ssh', '-tt', *ssh_conn.ssh_opts.split(), f"{connection_info['user']}@{connection_info['ip']}"]
         universal_user = connection_info.get('universal_user', 'rediacc')
-        # Datastore path is now direct (no user/company isolation)
+        # Datastore path is now direct (no user/organization isolation)
         datastore_path = connection_info['datastore']
         
         if args.command:

@@ -80,7 +80,7 @@ FULLY IMPLEMENTED COMMAND GROUPS
    Status: PRODUCTION READY
    - rediacc bridge                  IMPLEMENTED (1 subcommand)
    - rediacc queue                   IMPLEMENTED (9 subcommands)
-   - rediacc company                 IMPLEMENTED (6 subcommands)
+   - rediacc organization            IMPLEMENTED (6 subcommands)
    - rediacc audit                   IMPLEMENTED (1 subcommand)
 
 6. INSPECTION & MONITORING (2 commands)
@@ -137,7 +137,7 @@ CREATE COMMAND (10 resource types)
   Module: cli_main.py - CommandHandler.generic_command()
   Resources:
     - bridge        WORKING
-    - company       WORKING (no auth required)
+    - organization  WORKING (no auth required)
     - machine       WORKING
     - queue-item    WORKING
     - region        WORKING
@@ -153,7 +153,7 @@ LIST COMMAND (18 resource types)
   Resources:
     - audit-logs            WORKING
     - bridges               WORKING
-    - company-vault         WORKING
+    - organization-vault    WORKING
     - data-graph            WORKING
     - entity-history        WORKING
     - lookup-data           WORKING
@@ -167,7 +167,7 @@ LIST COMMAND (18 resource types)
     - team-schedules        WORKING
     - team-storages         WORKING
     - teams                 WORKING
-    - user-company          WORKING
+    - user-organization     WORKING
     - users                 WORKING
   Status: FULLY WORKING
 
@@ -263,7 +263,7 @@ QUEUE COMMAND (9 operations)
   Status: FULLY WORKING
   Notes: Supports dynamic queue function parameters
 
-COMPANY COMMAND (6 operations)
+ORGANIZATION COMMAND (6 operations)
   Module: cli_main.py - CommandHandler.generic_command()
   Operations:
     - block-user-requests  WORKING
@@ -327,7 +327,7 @@ Commands That Don't Require Authentication:
   4. rediacc protocol (all subcommands)    - Protocol registration
   5. rediacc setup                         - Setup instructions
   6. rediacc user activate                 - Account activation
-  7. rediacc create company                - Company creation
+  7. rediacc create organization           - Organization creation
   8. rediacc queue list-functions          - List available functions
 
 All other commands require valid authentication token.

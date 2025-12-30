@@ -15,7 +15,7 @@ class EnvironmentConfig:
     # Default values from typical .env file
     ENV_DEFAULTS = {
         'SYSTEM_DOMAIN': 'localhost',
-        'SYSTEM_COMPANY_NAME': 'REDIACC.IO',
+        'SYSTEM_ORGANIZATION_NAME': 'REDIACC.IO',
         'SYSTEM_ADMIN_EMAIL': 'admin@rediacc.io',
         'SYSTEM_ADMIN_PASSWORD': 'admin',
         'SYSTEM_DEFAULT_TEAM_NAME': 'Private Team',
@@ -34,11 +34,11 @@ class EnvironmentConfig:
         'PROVISION_CEPH_CLUSTER': 'false',
         'PROVISION_KVM_MACHINES': 'true',
         'EMAIL_SERVICE_TYPE': 'EXCHANGE',
-        'SYSTEM_COMPANY_VAULT_DEFAULTS': '{"UNIVERSAL_USER_ID":"7111","UNIVERSAL_USER_NAME":"rediacc","PLUGINS":{},"DOCKER_JSON_CONF":{}}',
+        'SYSTEM_ORGANIZATION_VAULT_DEFAULTS': '{"UNIVERSAL_USER_ID":"7111","UNIVERSAL_USER_NAME":"rediacc","PLUGINS":{},"DOCKER_JSON_CONF":{}}',
     }
     
-    # Default company vault structure
-    DEFAULT_COMPANY_VAULT = {
+    # Default organization vault structure
+    DEFAULT_ORGANIZATION_VAULT = {
         'UNIVERSAL_USER_ID': '7111',
         'UNIVERSAL_USER_NAME': 'rediacc',
         'PLUGINS': {
@@ -63,43 +63,43 @@ class EnvironmentConfig:
         return os.environ.get(key, cls.ENV_DEFAULTS.get(key, default))
     
     @classmethod
-    def get_company_vault_defaults(cls) -> Dict[str, Any]:
-        """Parse SYSTEM_COMPANY_VAULT_DEFAULTS from environment or use defaults"""
-        vault_json = cls.get_env('SYSTEM_COMPANY_VAULT_DEFAULTS')
-        
+    def get_organization_vault_defaults(cls) -> Dict[str, Any]:
+        """Parse SYSTEM_ORGANIZATION_VAULT_DEFAULTS from environment or use defaults"""
+        vault_json = cls.get_env('SYSTEM_ORGANIZATION_VAULT_DEFAULTS')
+
         if not vault_json:
-            return cls.DEFAULT_COMPANY_VAULT.copy()
-        
+            return cls.DEFAULT_ORGANIZATION_VAULT.copy()
+
         try:
             # Handle escaped JSON strings from shell
             if vault_json.startswith('{') and '\\' in vault_json:
                 vault_json = vault_json.replace('\\"', '"').replace('\\\\', '\\')
-            
+
             vault_data = json.loads(vault_json)
-            
+
             # Ensure essential fields with defaults
             for key in ['UNIVERSAL_USER_ID', 'UNIVERSAL_USER_NAME']:
-                vault_data.setdefault(key, cls.DEFAULT_COMPANY_VAULT[key])
-            
+                vault_data.setdefault(key, cls.DEFAULT_ORGANIZATION_VAULT[key])
+
             # Variable substitution for ${DOCKER_REGISTRY}
             docker_registry = cls.get_env('DOCKER_REGISTRY', '192.168.111.1:5000')
             vault_str = json.dumps(vault_data).replace('${DOCKER_REGISTRY}', docker_registry)
             return json.loads(vault_str)
         except (json.JSONDecodeError, TypeError) as e:
             import sys
-            print(f"Warning: Failed to parse SYSTEM_COMPANY_VAULT_DEFAULTS: {e}\n"
+            print(f"Warning: Failed to parse SYSTEM_ORGANIZATION_VAULT_DEFAULTS: {e}\n"
                   f"Debug: The string was: {repr(vault_json)}", file=sys.stderr)
-            return cls.DEFAULT_COMPANY_VAULT.copy()
+            return cls.DEFAULT_ORGANIZATION_VAULT.copy()
     
     @classmethod
     def get_universal_user_info(cls) -> Tuple[str, str, Optional[str]]:
         """Get universal user info from environment or defaults.
-        Returns: (universal_user_name, universal_user_id, company_id)
+        Returns: (universal_user_name, universal_user_id, organization_id)
         """
-        vault = cls.get_company_vault_defaults()
-        return (vault.get('UNIVERSAL_USER_NAME', 'rediacc'), 
-                vault.get('UNIVERSAL_USER_ID', '7111'), 
-                vault.get('COMPANY_ID'))
+        vault = cls.get_organization_vault_defaults()
+        return (vault.get('UNIVERSAL_USER_NAME', 'rediacc'),
+                vault.get('UNIVERSAL_USER_ID', '7111'),
+                vault.get('ORGANIZATION_ID'))
     
     @classmethod
     def get_universal_user_name(cls) -> str:
@@ -122,9 +122,9 @@ class EnvironmentConfig:
         important_vars = [
             'SYSTEM_API_URL', 'PUBLIC_API_URL', 'SANDBOX_API_URL',
             'REDIACC_BUILD_TYPE', 'REDIACC_SANDBOX_MODE',
-            'SYSTEM_ADMIN_EMAIL', 'SYSTEM_ADMIN_PASSWORD', 
-            'SYSTEM_MASTER_PASSWORD', 'SYSTEM_HTTP_PORT', 'SYSTEM_COMPANY_ID',
-            'SYSTEM_COMPANY_VAULT_DEFAULTS', 'SYSTEM_COMPANY_NAME',
+            'SYSTEM_ADMIN_EMAIL', 'SYSTEM_ADMIN_PASSWORD',
+            'SYSTEM_MASTER_PASSWORD', 'SYSTEM_HTTP_PORT', 'SYSTEM_ORGANIZATION_ID',
+            'SYSTEM_ORGANIZATION_VAULT_DEFAULTS', 'SYSTEM_ORGANIZATION_NAME',
             'SYSTEM_DEFAULT_TEAM_NAME', 'SYSTEM_DEFAULT_REGION_NAME',
             'SYSTEM_DEFAULT_BRIDGE_NAME', 'DOCKER_REGISTRY'
         ]
@@ -152,6 +152,6 @@ def get_universal_user_id() -> str:
     return EnvironmentConfig.get_universal_user_id()
 
 
-def get_company_vault_defaults() -> Dict[str, Any]:
-    """Get company vault defaults from environment"""
-    return EnvironmentConfig.get_company_vault_defaults()
+def get_organization_vault_defaults() -> Dict[str, Any]:
+    """Get organization vault defaults from environment"""
+    return EnvironmentConfig.get_organization_vault_defaults()

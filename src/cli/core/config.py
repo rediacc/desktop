@@ -202,11 +202,11 @@ class Config:
     DEFAULTS = {
         'SYSTEM_HTTP_PORT': '443',
         'SYSTEM_API_URL': 'https://www.rediacc.com/api',
-        'SYSTEM_COMPANY_NAME': 'REDIACC.IO',
+        'SYSTEM_ORGANIZATION_NAME': 'REDIACC.IO',
         'SYSTEM_DEFAULT_TEAM_NAME': 'Private Team',
         'SYSTEM_DEFAULT_REGION_NAME': 'Default Region',
         'SYSTEM_DEFAULT_BRIDGE_NAME': 'Global Bridges',
-        'SYSTEM_COMPANY_VAULT_DEFAULTS': '{"UNIVERSAL_USER_ID":"7111","UNIVERSAL_USER_NAME":"rediacc","PLUGINS":{},"DOCKER_JSON_CONF":{}}',
+        'SYSTEM_ORGANIZATION_VAULT_DEFAULTS': '{"UNIVERSAL_USER_ID":"7111","UNIVERSAL_USER_NAME":"rediacc","PLUGINS":{},"DOCKER_JSON_CONF":{}}',
         'DOCKER_REGISTRY': '192.168.111.1:5000',
         'REDIACC_LINUX_USER': 'rediacc',
         'REDIACC_LINUX_GROUP': 'rediacc',
@@ -518,8 +518,8 @@ class TokenManager:
                 if not TokenManager._initialized:
                     self._initialize()
                     self._master_password = None
-                    self._vault_company = None
-                    self._company_name = None
+                    self._vault_organization = None
+                    self._organization_name = None
                     self._vault_info_fetched = False
                     TokenManager._initialized = True
     
@@ -668,7 +668,7 @@ class TokenManager:
         return None
     
     @classmethod
-    def set_token(cls, token: str, email: Optional[str] = None, company: Optional[str] = None, vault_company: Optional[str] = None, endpoint: Optional[str] = None):
+    def set_token(cls, token: str, email: Optional[str] = None, organization: Optional[str] = None, vault_organization: Optional[str] = None, endpoint: Optional[str] = None):
         if not cls._initialized: TokenManager()
         if not cls.validate_token(token): raise ValueError("Invalid token format")
 
@@ -679,10 +679,10 @@ class TokenManager:
 
         if email:
             config['email'] = email
-        if company:
-            config['company'] = company
-        if vault_company is not None:
-            config['vault_company'] = vault_company
+        if organization:
+            config['organization'] = organization
+        if vault_organization is not None:
+            config['vault_organization'] = vault_organization
         if endpoint:
             config['endpoint'] = endpoint
 
@@ -698,7 +698,7 @@ class TokenManager:
         config = cls._load_from_config()
 
         # Remove auth-related fields
-        auth_fields = ['token', 'token_updated_at', 'email', 'company', 'vault_company', 'endpoint']
+        auth_fields = ['token', 'token_updated_at', 'email', 'organization', 'vault_organization', 'endpoint']
         for field in auth_fields:
             config.pop(field, None)
 
@@ -715,9 +715,9 @@ class TokenManager:
         return {
             'token': cls.mask_token(config.get('token')),
             'email': config.get('email'),
-            'company': config.get('company'),
-            'vault_company': config.get('vault_company'),
-            'has_vault': bool(config.get('vault_company')),
+            'organization': config.get('organization'),
+            'vault_organization': config.get('vault_organization'),
+            'has_vault': bool(config.get('vault_organization')),
             'endpoint': config.get('endpoint'),
             'token_updated_at': config.get('token_updated_at')
         }
@@ -800,28 +800,28 @@ class TokenManager:
     
     # Vault Management
     def has_vault_encryption(self) -> bool:
-        """Check if company has vault encryption enabled"""
-        # Try to get vault company from memory first, then config
-        vault_company = self._vault_company or self.get_config_value('vault_company')
-        return bool(vault_company and is_encrypted(vault_company))
+        """Check if organization has vault encryption enabled"""
+        # Try to get vault organization from memory first, then config
+        vault_organization = self._vault_organization or self.get_config_value('vault_organization')
+        return bool(vault_organization and is_encrypted(vault_organization))
     
-    def get_vault_company(self) -> Optional[str]:
-        """Get vault company value"""
-        return self._vault_company or self.get_config_value('vault_company')
+    def get_vault_organization(self) -> Optional[str]:
+        """Get vault organization value"""
+        return self._vault_organization or self.get_config_value('vault_organization')
     
     def validate_master_password(self, password: str) -> bool:
-        """Validate master password against VaultCompany"""
-        vault_company = self.get_vault_company()
+        """Validate master password against VaultOrganization"""
+        vault_organization = self.get_vault_organization()
         
-        if not vault_company:
+        if not vault_organization:
             return False
         
-        if not is_encrypted(vault_company):
+        if not is_encrypted(vault_organization):
             return True  # No encryption required
         
         try:
             # Try to decrypt the vault content
-            decrypted = decrypt_string(vault_company, password)
+            decrypted = decrypt_string(vault_organization, password)
             # If decryption succeeds, the password is valid
             # The decrypted content should be valid JSON (even if it's just {})
             json.loads(decrypted)
@@ -834,7 +834,7 @@ class TokenManager:
     def needs_vault_info_fetch(self) -> bool:
         """Check if we need to fetch vault info"""
         # Need to fetch if authenticated but don't have vault info
-        return self.is_authenticated() and not self._vault_info_fetched and not self.get_vault_company()
+        return self.is_authenticated() and not self._vault_info_fetched and not self.get_vault_organization()
     
     def mark_vault_info_fetched(self):
         """Mark that we've attempted to fetch vault info this session"""
@@ -843,23 +843,23 @@ class TokenManager:
     def load_vault_info_from_config(self):
         """Load vault info from saved config"""
         config = self._load_from_config()
-        self._vault_company = config.get('vault_company')
-        self._company_name = config.get('company')
+        self._vault_organization = config.get('vault_organization')
+        self._organization_name = config.get('organization')
     
     
     # Enhanced set_token to update internal state
     @classmethod
     def set_token_with_auth(cls, token: str, email: Optional[str] = None,
-                           company: Optional[str] = None, vault_company: Optional[str] = None, endpoint: Optional[str] = None):
+                           organization: Optional[str] = None, vault_organization: Optional[str] = None, endpoint: Optional[str] = None):
         """Set token and authentication information (ConfigManager compatibility)"""
         instance = cls()
-        cls.set_token(token, email, company, vault_company, endpoint)
+        cls.set_token(token, email, organization, vault_organization, endpoint)
 
         # Update instance state
-        if company:
-            instance._company_name = company
-        if vault_company:
-            instance._vault_company = vault_company
+        if organization:
+            instance._organization_name = organization
+        if vault_organization:
+            instance._vault_organization = vault_organization
     
     # Enhanced clear method
     @classmethod 
@@ -870,8 +870,8 @@ class TokenManager:
         
         # Clear instance state
         instance._master_password = None
-        instance._vault_company = None
-        instance._company_name = None
+        instance._vault_organization = None
+        instance._organization_name = None
         instance._vault_info_fetched = False
     
     # ConfigManager compatibility property
@@ -1835,13 +1835,13 @@ class TerminalDetector:
         # Only export critical environment variables that are set
         important_vars = [
             'SYSTEM_API_URL',
-            'SYSTEM_ADMIN_EMAIL', 
+            'SYSTEM_ADMIN_EMAIL',
             'SYSTEM_ADMIN_PASSWORD',
             'SYSTEM_MASTER_PASSWORD',
             'SYSTEM_HTTP_PORT',
-            'SYSTEM_COMPANY_ID',
-            'SYSTEM_COMPANY_VAULT_DEFAULTS',
-            'SYSTEM_COMPANY_NAME',
+            'SYSTEM_ORGANIZATION_ID',
+            'SYSTEM_ORGANIZATION_VAULT_DEFAULTS',
+            'SYSTEM_ORGANIZATION_NAME',
             'SYSTEM_DEFAULT_TEAM_NAME',
             'DOCKER_REGISTRY'
         ]
@@ -1858,13 +1858,13 @@ class TerminalDetector:
         exports = []
         important_vars = [
             'SYSTEM_API_URL',
-            'SYSTEM_ADMIN_EMAIL', 
+            'SYSTEM_ADMIN_EMAIL',
             'SYSTEM_ADMIN_PASSWORD',
             'SYSTEM_MASTER_PASSWORD',
             'SYSTEM_HTTP_PORT',
-            'SYSTEM_COMPANY_ID',
-            'SYSTEM_COMPANY_VAULT_DEFAULTS',
-            'SYSTEM_COMPANY_NAME',
+            'SYSTEM_ORGANIZATION_ID',
+            'SYSTEM_ORGANIZATION_VAULT_DEFAULTS',
+            'SYSTEM_ORGANIZATION_NAME',
             'SYSTEM_DEFAULT_TEAM_NAME',
             'DOCKER_REGISTRY'
         ]
@@ -1882,13 +1882,13 @@ class TerminalDetector:
         exports = []
         important_vars = [
             'SYSTEM_API_URL',
-            'SYSTEM_ADMIN_EMAIL', 
+            'SYSTEM_ADMIN_EMAIL',
             'SYSTEM_ADMIN_PASSWORD',
             'SYSTEM_MASTER_PASSWORD',
             'SYSTEM_HTTP_PORT',
-            'SYSTEM_COMPANY_ID',
-            'SYSTEM_COMPANY_VAULT_DEFAULTS',
-            'SYSTEM_COMPANY_NAME',
+            'SYSTEM_ORGANIZATION_ID',
+            'SYSTEM_ORGANIZATION_VAULT_DEFAULTS',
+            'SYSTEM_ORGANIZATION_NAME',
             'SYSTEM_DEFAULT_TEAM_NAME',
             'DOCKER_REGISTRY'
         ]

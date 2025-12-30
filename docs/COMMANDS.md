@@ -65,7 +65,7 @@ rediacc list users --team TEAM [--limit N]
 
 ```bash
 # Create entities
-rediacc create company NAME --email EMAIL --password PASS --plan PLAN
+rediacc create organization NAME --email EMAIL --password PASS --plan PLAN
 rediacc create team NAME [--vault-file FILE]
 rediacc create machine NAME --team TEAM [--vault-file FILE]
 rediacc create bridge NAME --team TEAM [--vault-file FILE]
@@ -79,7 +79,7 @@ rediacc create user EMAIL --team TEAM --role ROLE
 
 ```bash
 # Update entity vaults
-rediacc update company NAME --vault-file FILE
+rediacc update organization NAME --vault-file FILE
 rediacc update team NAME --vault-file FILE
 rediacc update machine NAME --team TEAM --vault-file FILE
 rediacc update bridge NAME --team TEAM --vault-file FILE
@@ -105,7 +105,7 @@ rediacc delete user EMAIL --team TEAM
 
 ```bash
 # Get detailed info including vault data
-rediacc inspect company NAME
+rediacc inspect organization NAME
 rediacc inspect team NAME
 rediacc inspect machine NAME --team TEAM
 rediacc inspect bridge NAME --team TEAM

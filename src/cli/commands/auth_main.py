@@ -140,24 +140,24 @@ def login_command(args):
                 print(format_output(None, output_format, None, "TFA verification failed: Invalid authentication token"))
                 return 1
 
-    company = auth_data.get('companyName')
-    vault_company = auth_data.get('vaultCompany') or auth_data.get('VaultCompany')
+    organization = auth_data.get('organizationName')
+    vault_organization = auth_data.get('vaultOrganization') or auth_data.get('VaultOrganization')
 
-    config_manager.set_token_with_auth(token, email, company, vault_company, endpoint)
+    config_manager.set_token_with_auth(token, email, organization, vault_organization, endpoint)
 
-    # Immediately fetch and update vault_company with COMPANY_ID after login
-    company_info = client.get_company_vault()
-    if company_info:
-        updated_vault = company_info.get('vaultCompany')
+    # Immediately fetch and update vault_organization with ORGANIZATION_ID after login
+    organization_info = client.get_organization_vault()
+    if organization_info:
+        updated_vault = organization_info.get('vaultOrganization')
         if updated_vault:
-            config_manager.set_token_with_auth(token, email, company, updated_vault, endpoint)
+            config_manager.set_token_with_auth(token, email, organization, updated_vault, endpoint)
 
-    # Check if company has vault encryption enabled
-    if vault_company and is_encrypted(vault_company):
-        # Company requires master password
+    # Check if organization has vault encryption enabled
+    if vault_organization and is_encrypted(vault_organization):
+        # Organization requires master password
         master_password = getattr(args, 'master_password', None)
         if not master_password:
-            print(colorize("Your company requires a master password for vault encryption.", 'YELLOW'))
+            print(colorize("Your organization requires a master password for vault encryption.", 'YELLOW'))
             master_password = getpass.getpass("Master Password: ")
 
         if config_manager.validate_master_password(master_password):
@@ -166,28 +166,28 @@ def login_command(args):
                 print(colorize("Master password validated successfully", 'GREEN'))
         else:
             print(format_output(None, output_format, None,
-                "Invalid master password. Please check with your administrator for the correct company master password."))
+                "Invalid master password. Please check with your administrator for the correct organization master password."))
             if output_format not in ['json', 'json-full']:
                 print(colorize("Warning: Logged in but vault data will not be decrypted", 'YELLOW'))
     elif hasattr(args, 'master_password') and args.master_password and output_format not in ['json', 'json-full']:
-        print(colorize("Note: Your company has not enabled vault encryption. The master password will not be used.", 'YELLOW'))
+        print(colorize("Note: Your organization has not enabled vault encryption. The master password will not be used.", 'YELLOW'))
 
     # Format output
     if output_format in ['json', 'json-full']:
         result = {
             'email': email,
-            'company': company,
+            'organization': organization,
             'endpoint': endpoint,
-            'vault_encryption_enabled': bool(vault_company and is_encrypted(vault_company)),
+            'vault_encryption_enabled': bool(vault_organization and is_encrypted(vault_organization)),
             'master_password_set': bool(config_manager.get_master_password())
         }
         print(format_output(result, output_format, f"Successfully logged in as {email}"))
     else:
         print(colorize(f"Successfully logged in as {email}", 'GREEN'))
         print(f"Endpoint: {endpoint}")
-        if company:
-            print(f"Company: {company}")
-        if vault_company and is_encrypted(vault_company):
+        if organization:
+            print(f"Organization: {organization}")
+        if vault_organization and is_encrypted(vault_organization):
             print(f"Vault Encryption: Enabled")
             print(f"Master Password: {'Set' if config_manager.get_master_password() else 'Not set (vault data will remain encrypted)'}")
 
@@ -221,12 +221,12 @@ def status_command(args):
     auth_info = TokenManager.get_auth_info()
     token = auth_info.get('token')
     email = auth_info.get('email')
-    company = auth_info.get('company')
-    vault_company = auth_info.get('vault_company')
+    organization = auth_info.get('organization')
+    vault_organization = auth_info.get('vault_organization')
 
     is_authenticated = TokenManager.is_authenticated()
     has_master_password = bool(TokenManager().get_master_password())
-    vault_encrypted = bool(vault_company and is_encrypted(vault_company))
+    vault_encrypted = bool(vault_organization and is_encrypted(vault_organization))
 
     # Get endpoint information
     api_endpoint = client.base_url
@@ -238,7 +238,7 @@ def status_command(args):
         result = {
             'authenticated': is_authenticated,
             'email': email,
-            'company': company,
+            'organization': organization,
             'token': TokenManager.mask_token(token) if token else None,
             'vault_encryption_enabled': vault_encrypted,
             'master_password_set': has_master_password,
@@ -252,7 +252,7 @@ def status_command(args):
         if is_authenticated:
             print(colorize("Authentication Status: Logged In", 'GREEN'))
             print(f"Email: {email}")
-            print(f"Company: {company}")
+            print(f"Organization: {organization}")
             print(f"Token: {TokenManager.mask_token(token)}")
             print(f"API Endpoint: {api_endpoint}")
             print(f"Full Endpoint: {full_endpoint}")
@@ -291,13 +291,13 @@ Examples:
     %(prog)s login --endpoint https://custom.rediacc.com/api
 
   Login with email and password:
-    %(prog)s login --email user@company.com --password myPassword
+    %(prog)s login --email user@organization.com --password myPassword
 
   Login with TFA code:
-    %(prog)s login --email user@company.com --tfa-code 123456
+    %(prog)s login --email user@organization.com --tfa-code 123456
 
   Login with master password for vault encryption:
-    %(prog)s login --email user@company.com --master-password myMasterPass
+    %(prog)s login --email user@organization.com --master-password myMasterPass
 
   Check authentication status:
     %(prog)s status

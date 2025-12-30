@@ -28,15 +28,15 @@ def is_pypi_installation() -> bool:
     # Check if the path contains 'site-packages' - indicates PyPI installation
     return 'site-packages' in str(cli_tool_path) or 'dist-packages' in str(cli_tool_path)
 
-def get_company_short(company_id: str) -> str:
+def get_organization_short(organization_id: str) -> str:
     """
-    Get shortened company ID for runtime paths to avoid socket path length issues.
-    Only shortens if company_id looks like a GUID (contains dashes), otherwise uses as-is.
+    Get shortened organization ID for runtime paths to avoid socket path length issues.
+    Only shortens if organization_id looks like a GUID (contains dashes), otherwise uses as-is.
     """
-    if '-' in company_id:
-        return company_id.split('-')[0]  # Take first part before first dash
+    if '-' in organization_id:
+        return organization_id.split('-')[0]  # Take first part before first dash
     else:
-        return company_id  # Use as-is if not GUID-like
+        return organization_id  # Use as-is if not GUID-like
 
 def _track_ssh_operation(operation: str, host: str = "unknown", success: bool = True,
                         duration_ms: Optional[float] = None, error: Optional[str] = None, **kwargs):
@@ -184,33 +184,33 @@ def _retry_with_backoff(func, max_retries=3, initial_delay=0.5, error_msg="Opera
         return None
 
 def _create_api_client():
-    """Create a minimal API client for fetching company vault"""
+    """Create a minimal API client for fetching organization vault"""
     from .api_client import client
     # Ensure the client has a config manager for token rotation
     client.ensure_config_manager()
     return client
 
 def _get_universal_user_info() -> Tuple[Optional[str], Optional[str], Optional[str]]:
-    """Get universal user info and company ID from API (always fresh) or environment fallback.
-    Returns: (universal_user_name, universal_user_id, company_id)
+    """Get universal user info and organization ID from API (always fresh) or environment fallback.
+    Returns: (universal_user_name, universal_user_id, organization_id)
 
     Note: This function ALWAYS fetches fresh data from the API to avoid stale cache issues.
-    Company ID is never cached to disk as it can change and must always be current.
+    Organization ID is never cached to disk as it can change and must always be current.
     """
     from .config import get_logger
     logger = get_logger(__name__)
 
     universal_user_name = None
     universal_user_id = None
-    company_id = None
+    organization_id = None
 
     # Always fetch fresh from API if authenticated
     if TokenManager.get_token():
-        logger.debug(f"[_get_universal_user_info] Fetching fresh data from GetCompanyVault API...")
+        logger.debug(f"[_get_universal_user_info] Fetching fresh data from GetOrganizationVault API...")
         try:
             client = _create_api_client()
             current_token = TokenManager.get_token()
-            response = client.token_request("GetCompanyVault", {})
+            response = client.token_request("GetOrganizationVault", {})
             new_token = TokenManager.get_token()
 
             # Save updated token if it changed
@@ -228,10 +228,10 @@ def _get_universal_user_info() -> Tuple[Optional[str], Optional[str], Optional[s
                     data = table.get('data', [])
                     if data:
                         for row in data:
-                            # Get company_id from companyCredential field
-                            if 'companyCredential' in row or 'CompanyCredential' in row:
-                                company_id = row.get('companyCredential') or row.get('CompanyCredential')
-                                logger.debug(f"[_get_universal_user_info] From API (companyCredential): {company_id}")
+                            # Get organization_id from organizationCredential field
+                            if 'organizationCredential' in row or 'OrganizationCredential' in row:
+                                organization_id = row.get('organizationCredential') or row.get('OrganizationCredential')
+                                logger.debug(f"[_get_universal_user_info] From API (organizationCredential): {organization_id}")
 
                             # Get user info from vault content
                             vault_content = row.get('vaultContent')
@@ -248,7 +248,7 @@ def _get_universal_user_info() -> Tuple[Optional[str], Optional[str], Optional[s
                                 except json.JSONDecodeError as e:
                                     logger.debug(f"[_get_universal_user_info] Failed to parse vault content: {e}")
 
-                            if company_id:
+                            if organization_id:
                                 break
             else:
                 logger.debug(f"[_get_universal_user_info] API error: {response.get('error')}")
@@ -256,31 +256,31 @@ def _get_universal_user_info() -> Tuple[Optional[str], Optional[str], Optional[s
             logger.debug(f"[_get_universal_user_info] API fetch failed: {e}")
 
     # Fallback to environment if API didn't provide values
-    if not universal_user_name or not universal_user_id or not company_id:
+    if not universal_user_name or not universal_user_id or not organization_id:
         logger.debug(f"[_get_universal_user_info] Missing values from API, checking environment...")
         from .env_config import EnvironmentConfig
-        env_user_name, env_user_id, env_company_id = EnvironmentConfig.get_universal_user_info()
+        env_user_name, env_user_id, env_organization_id = EnvironmentConfig.get_universal_user_info()
 
         # Use environment values as fallback
         if not universal_user_name:
             universal_user_name = env_user_name
         if not universal_user_id:
             universal_user_id = env_user_id
-        if not company_id:
-            company_id = env_company_id
+        if not organization_id:
+            organization_id = env_organization_id
 
         logger.debug(f"[_get_universal_user_info] Environment fallback values:")
         logger.debug(f"  - universal_user_name: {env_user_name}")
         logger.debug(f"  - universal_user_id: {env_user_id}")
-        logger.debug(f"  - company_id: {env_company_id}")
+        logger.debug(f"  - organization_id: {env_organization_id}")
 
     logger.debug(f"[_get_universal_user_info] Final result (always fresh):")
     logger.debug(f"  - universal_user_name: {universal_user_name}")
     logger.debug(f"  - universal_user_id: {universal_user_id}")
-    logger.debug(f"  - company_id: {company_id}")
+    logger.debug(f"  - organization_id: {organization_id}")
     logger.debug(f"  - Source: API (fresh data)")
 
-    return (universal_user_name, universal_user_id, company_id)
+    return (universal_user_name, universal_user_id, organization_id)
 
 class _SuppressSysExit:
     def __init__(self): self.exit_called = False; self.original_exit = None
@@ -383,12 +383,12 @@ def get_ssh_key_from_vault(team_name: Optional[str] = None) -> Optional[str]:
         return None
     
     # Use API client directly to get teams
-    response = client.token_request("GetCompanyTeams", {})
-    
+    response = client.token_request("GetOrganizationTeams", {})
+
     if response.get('error'):
         return None
-    
-    # Extract teams from response (GetCompanyTeams returns teams in resultSets[1])
+
+    # Extract teams from response (GetOrganizationTeams returns teams in resultSets[1])
     teams = []
     result_sets = response.get('resultSets', [])
     if len(result_sets) > 1:
@@ -872,8 +872,8 @@ def get_machine_connection_info(machine_info: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def get_repository_paths(repo_guid: str, datastore: str, universal_user_id: str = None, company_id: str = None) -> Dict[str, str]:
-    """Calculate repository paths. universal_user_id and company_id are kept for compatibility but no longer used in paths."""
+def get_repository_paths(repo_guid: str, datastore: str, universal_user_id: str = None, organization_id: str = None) -> Dict[str, str]:
+    """Calculate repository paths. universal_user_id and organization_id are kept for compatibility but no longer used in paths."""
     from .config import get_logger
     logger = get_logger(__name__)
 
@@ -882,7 +882,7 @@ def get_repository_paths(repo_guid: str, datastore: str, universal_user_id: str 
     logger.debug(f"  - repo_guid: {repo_guid}")
     logger.debug(f"  - datastore: {datastore}")
 
-    # Paths are now directly under datastore (no user/company isolation)
+    # Paths are now directly under datastore (no user/organization isolation)
     base_path = datastore
     docker_base = f"{base_path}/{INTERIM_FOLDER_NAME}/{repo_guid}/docker"
 
@@ -1143,21 +1143,21 @@ class RepositoryConnection:
 
         logger.debug(f"  - Selected GUID: {repo_guid} (from {'repositoryGuid' if repo_guid_field else 'grandGuid'})")
 
-        _, universal_user_id, company_id = _get_universal_user_info()
+        _, universal_user_id, organization_id = _get_universal_user_info()
 
-        # DEBUG: Log universal user and company info
+        # DEBUG: Log universal user and organization info
         logger.debug(f"[RepositoryConnection.connect] Path components:")
         logger.debug(f"  - universal_user_id: {universal_user_id}")
-        logger.debug(f"  - company_id: {company_id}")
+        logger.debug(f"  - organization_id: {organization_id}")
         logger.debug(f"  - datastore: {self._connection_info['datastore']}")
 
-        if not company_id:
-            error_exit("COMPANY_ID not found. Please re-login or check your company configuration.")
+        if not organization_id:
+            error_exit("ORGANIZATION_ID not found. Please re-login or check your organization configuration.")
 
         if not universal_user_id:
-            error_exit("Universal user ID not found. Please re-login or check your company configuration.")
+            error_exit("Universal user ID not found. Please re-login or check your organization configuration.")
 
-        self._repo_paths = get_repository_paths(repo_guid, self._connection_info['datastore'], universal_user_id, company_id)
+        self._repo_paths = get_repository_paths(repo_guid, self._connection_info['datastore'], universal_user_id, organization_id)
 
         if not self._repo_paths:
             error_exit("Failed to calculate repository paths")

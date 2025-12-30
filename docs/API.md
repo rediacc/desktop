@@ -20,18 +20,18 @@ The CLI provides operations for:
 # List all companies
 rediacc list companies
 
-# Create new company (admin only)
-rediacc create company "TechCorp" \
+# Create new organization (admin only)
+rediacc create organization "TechCorp" \
   --email admin@techcorp.com \
   --password securepass \
   --plan ELITE
 
-# Inspect company details
-rediacc inspect company "TechCorp"
+# Inspect organization details
+rediacc inspect organization "TechCorp"
 
-# Update company vault
-echo '{"settings": {"tier": "enterprise"}}' > company-vault.json
-rediacc update company "TechCorp" --vault-file company-vault.json
+# Update organization vault
+echo '{"settings": {"tier": "enterprise"}}' > organization-vault.json
+rediacc update organization "TechCorp" --vault-file organization-vault.json
 ```
 
 ### Teams
@@ -143,7 +143,7 @@ rediacc delete storage "old-backup" --team Production
 rediacc list users --team Development
 
 # Add user to team
-rediacc create user "developer@company.com" \
+rediacc create user "developer@organization.com" \
   --team Development \
   --role MEMBER
 
@@ -153,7 +153,7 @@ rediacc create user "developer@company.com" \
 # - VIEWER: Read-only access
 
 # Remove user from team
-rediacc delete user "former@company.com" --team Development
+rediacc delete user "former@organization.com" --team Development
 
 # Get current user info
 rediacc me
@@ -209,7 +209,7 @@ rediacc --output json search "web" | jq '.data[]'
 ### Understanding Vaults
 
 Vaults store encrypted configuration and credentials:
-- **Company Vault**: Organization-wide settings
+- **Organization Vault**: Organization-wide settings
 - **Team Vault**: SSH keys, shared credentials
 - **Machine Vault**: Connection details, IP addresses
 - **Repository Vault**: App configuration, environment variables

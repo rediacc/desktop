@@ -185,7 +185,7 @@ def get_vault_set_params(args, config_manager=None):
         'repository': {'teamName': args.team, 'repositoryName': args.name, 'repositoryTag': args.tag, 'vaultContent': vault_data},
         'storage': {'teamName': args.team, 'storageName': args.name, 'vaultContent': vault_data},
         'schedule': {'teamName': args.team, 'scheduleName': args.name, 'vaultContent': vault_data},
-        'company': {'vaultContent': vault_data}
+        'organization': {'vaultContent': vault_data}
     }
 
     if args.resource_type in resource_mappings:
@@ -238,7 +238,7 @@ class VaultHandler:
                 'resource_type': resource_type,
                 'vault_version': params.get('vaultVersion', 1)
             }
-            if resource_type != 'company':
+            if resource_type != 'organization':
                 result['name'] = args.name
             if resource_type in ['machine', 'repository', 'storage', 'schedule']:
                 result['team'] = args.team
@@ -261,7 +261,7 @@ class VaultHandler:
 
         if not self.config_manager.has_vault_encryption():
             print(format_output(None, self.output_format, None,
-                "Your company has not enabled vault encryption. Contact your administrator to enable it."))
+                "Your organization has not enabled vault encryption. Contact your administrator to enable it."))
             return 1
 
         master_password = getpass.getpass("Enter master password: ")
@@ -279,7 +279,7 @@ class VaultHandler:
             return 0
         else:
             print(format_output(None, self.output_format, None,
-                "Invalid master password. Please check with your administrator for the correct company master password."))
+                "Invalid master password. Please check with your administrator for the correct organization master password."))
             return 1
 
     def clear_password_command(self, args):
@@ -293,15 +293,15 @@ class VaultHandler:
     def status_command(self, args):
         """Show vault encryption status"""
         self.client._ensure_vault_info()
-        vault_company = self.config_manager.get_vault_company()
+        vault_organization = self.config_manager.get_vault_organization()
 
         status_data = {
             'crypto_available': CRYPTO_AVAILABLE,
-            'company': self.config_manager.config.get('company'),
+            'organization': self.config_manager.config.get('organization'),
             'vault_encryption_enabled': self.config_manager.has_vault_encryption(),
             'master_password_set': bool(self.config_manager.get_master_password()),
-            'vault_company_present': bool(vault_company),
-            'vault_company_encrypted': is_encrypted(vault_company) if vault_company else False
+            'vault_organization_present': bool(vault_organization),
+            'vault_organization_encrypted': is_encrypted(vault_organization) if vault_organization else False
         }
 
         if self.output_format == 'json':
@@ -310,8 +310,8 @@ class VaultHandler:
             print(colorize("VAULT ENCRYPTION STATUS", 'HEADER'))
             print("=" * 40)
             print(f"Cryptography Library: {'Available' if status_data['crypto_available'] else 'Not Available'}")
-            print(f"Company: {status_data['company'] or 'Not set'}")
-            print(f"Vault Company Data: {'Present' if status_data['vault_company_present'] else 'Not fetched'}")
+            print(f"Organization: {status_data['organization'] or 'Not set'}")
+            print(f"Vault Organization Data: {'Present' if status_data['vault_organization_present'] else 'Not fetched'}")
             print(f"Vault Encryption: {'Required' if status_data['vault_encryption_enabled'] else 'Not Required'}")
             print(f"Master Password: {'Set' if status_data['master_password_set'] else 'Not Set'}")
 
@@ -319,10 +319,10 @@ class VaultHandler:
                 print("\n" + colorize("To enable vault encryption, install the cryptography library:", 'YELLOW'))
                 print("  pip install cryptography")
             elif status_data['vault_encryption_enabled'] and not status_data['master_password_set']:
-                print("\n" + colorize("Your company requires a master password for vault encryption.", 'YELLOW'))
+                print("\n" + colorize("Your organization requires a master password for vault encryption.", 'YELLOW'))
                 print("Use 'rediacc vault set-password' to set it.")
-            elif not status_data['vault_company_present']:
-                print("\n" + colorize("Note: Vault company information will be fetched on next command.", 'BLUE'))
+            elif not status_data['vault_organization_present']:
+                print("\n" + colorize("Note: Vault organization information will be fetched on next command.", 'BLUE'))
 
         return 0
 
@@ -349,9 +349,9 @@ def main():
 
     # Set subcommand
     set_parser = subparsers.add_parser('set', help='Set vault data for a resource')
-    set_parser.add_argument('resource_type', choices=['team', 'machine', 'region', 'bridge', 'repository', 'storage', 'schedule', 'company'],
+    set_parser.add_argument('resource_type', choices=['team', 'machine', 'region', 'bridge', 'repository', 'storage', 'schedule', 'organization'],
                            help='Resource type to set vault data for')
-    set_parser.add_argument('--name', help='Resource name (not needed for company)')
+    set_parser.add_argument('--name', help='Resource name (not needed for organization)')
     set_parser.add_argument('--team', help='Team name (for machine, repository, storage, schedule)')
     set_parser.add_argument('--region', help='Region name (for bridge)')
     set_parser.add_argument('--file', help='File containing JSON vault data (use - for stdin)')

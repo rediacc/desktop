@@ -1,15 +1,15 @@
 {
   "API_ENDPOINTS": {
     "create": {
-      "company": {
-        "endpoint": "CreateNewCompany",
+      "organization": {
+        "endpoint": "CreateNewOrganization",
         "auth_required": false,
         "auth_type": "credentials",
-        "params": "lambda args: {'companyName': args.company_name, 'activationCode': args.activation_code, 'subscriptionPlan': args.subscription_plan, 'companyVaultDefaults': args.vault_defaults, 'languagePreference': args.language_preference, 'sshPrivateKeyB64': args.ssh_private_key_b64, 'sshPublicKeyB64': args.ssh_public_key_b64}",
-        "success_msg": "Successfully created company: {name}",
+        "params": "lambda args: {'organizationName': args.organization_name, 'activationCode': args.activation_code, 'subscriptionPlan': args.subscription_plan, 'organizationVaultDefaults': args.vault_defaults, 'languagePreference': args.language_preference, 'sshPrivateKeyB64': args.ssh_private_key_b64, 'sshPublicKeyB64': args.ssh_public_key_b64}",
+        "success_msg": "Successfully created organization: {name}",
         "help": {
-          "description": "Create a new company account with admin user",
-          "details": "Creates a new Rediacc company along with its admin user account. The email and password parameters are used to create the admin user who will own the company. This is typically the first step in setting up a new Rediacc deployment.",
+          "description": "Create a new organization account with admin user",
+          "details": "Creates a new Rediacc organization along with its admin user account. The email and password parameters are used to create the admin user who will own the organization. This is typically the first step in setting up a new Rediacc deployment.",
           "parameters": {
             "activation_code": {
               "description": "",
@@ -21,7 +21,7 @@
               "required": false,
               "example": ""
             },
-            "company_name": {
+            "organization_name": {
               "description": "",
               "required": true,
               "example": "",
@@ -58,10 +58,10 @@
             "User email must not already exist in the system",
             "Email format must be valid (contains @ and .)",
             "Subscription plan must exist and be active (COMMUNITY, PRO, BUSINESS, or ENTERPRISE)",
-            "Company name is required and cannot be empty",
-            "Default company vault configuration will be applied automatically",
+            "Organization name is required and cannot be empty",
+            "Default organization vault configuration will be applied automatically",
             "COMMUNITY plan gets 10 years subscription, other plans get 30-day trial",
-            "Company creation is atomic - all or nothing operation",
+            "Organization creation is atomic - all or nothing operation",
             "Email validation checks for proper format with @ symbol and domain"
           ]
         }
@@ -71,8 +71,8 @@
         "params": "lambda args: {'newUserEmail': args.new_user_email, 'newUserHash': args.new_user_hash, 'activationCode': args.activation_code, 'languagePreference': args.language_preference}",
         "success_msg": "Successfully created user: {email}",
         "help": {
-          "description": "Create a new user in your company",
-          "details": "Creates a new user account that can access the company resources. Users must be activated before they can log in.",
+          "description": "Create a new user in your organization",
+          "details": "Creates a new user account that can access the organization resources. Users must be activated before they can log in.",
           "parameters": {
             "activation_code": {
               "description": "",
@@ -103,7 +103,7 @@
             "Password hash must be exactly 32 bytes",
             "Activation code must be exactly 6 characters",
             "Email format validation is performed",
-            "Company must not have exceeded user resource limits",
+            "Organization must not have exceeded user resource limits",
             "User creation is atomic with transactional safety",
             "New users are created in inactive state and must be activated",
             "Empty user vault is created automatically",
@@ -117,7 +117,7 @@
         "params": "lambda args: {'teamName': args.team, 'vaultContent': args.vault_content}",
         "success_msg": "Successfully created team: {name}",
         "help": {
-          "description": "Create a new team in your company",
+          "description": "Create a new team in your organization",
           "details": "Teams are organizational units that own machines, repositories, and other resources. Team members can manage all resources within the team.",
           "parameters": {
             "name": {
@@ -138,10 +138,10 @@
             }
           },
           "rules": [
-            "Team name must be unique within the company",
+            "Team name must be unique within the organization",
             "Team vault data cannot be null or empty",
             "User must pass authentication and authorization checks",
-            "Company must not have exceeded team resource limits",
+            "Organization must not have exceeded team resource limits",
             "Creator is automatically added as a team member",
             "Team names are case-sensitive",
             "Vault data must be valid JSON format",
@@ -177,16 +177,16 @@
             }
           },
           "rules": [
-            "Region name must be unique within the company",
+            "Region name must be unique within the organization",
             "Region vault data cannot be null or empty",
-            "Company must not have exceeded region resource limits",
+            "Organization must not have exceeded region resource limits",
             "User must pass authentication and authorization checks",
             "Vault data must be valid JSON format",
             "Resource limits depend on subscription plan",
             "Region names are case-sensitive",
             "Regions with bridges cannot be deleted",
             "Region creation is tracked in audit log",
-            "Admin permissions may be required depending on company settings"
+            "Admin permissions may be required depending on organization settings"
           ]
         }
       },
@@ -224,9 +224,9 @@
           },
           "rules": [
             "Bridge name must be unique within the region",
-            "Region must exist and belong to the user's company",
+            "Region must exist and belong to the user's organization",
             "Bridge vault data cannot be null or empty",
-            "Company must not have exceeded bridge resource limits",
+            "Organization must not have exceeded bridge resource limits",
             "User must have appropriate permissions",
             "Vault data must be valid JSON format",
             "Resource limits depend on subscription plan",
@@ -242,7 +242,7 @@
         "success_msg": "Successfully created machine: {name} for team {team}",
         "help": {
           "description": "Create a new machine in a team",
-          "details": "Machines are remote servers that execute tasks via SSH. They must be associated with a team and connected through a bridge. Machine names must be unique across the entire company.",
+          "details": "Machines are remote servers that execute tasks via SSH. They must be associated with a team and connected through a bridge. Machine names must be unique across the entire organization.",
           "parameters": {
             "team": {
               "description": "Team that will own this machine",
@@ -274,13 +274,13 @@
             }
           },
           "rules": [
-            "Machine name must be unique across the entire company (not just within team)",
+            "Machine name must be unique across the entire organization (not just within team)",
             "User must be a member of the specified team",
-            "Bridge must exist in a region within the company",
-            "Company must not have exceeded machine resource limits",
+            "Bridge must exist in a region within the organization",
+            "Organization must not have exceeded machine resource limits",
             "Machine vault data cannot be null or empty",
             "Vault data must be valid JSON format",
-            "Team must exist within the user's company",
+            "Team must exist within the user's organization",
             "Resource limits depend on subscription plan",
             "Machine names are case-sensitive",
             "Bridge must be accessible and properly configured"
@@ -340,8 +340,8 @@
             "Repository name must be unique within the team",
             "User must be a member of the specified team",
             "Repository vault data cannot be null or empty",
-            "Company must not have exceeded repository resource limits",
-            "Team must exist within the user's company",
+            "Organization must not have exceeded repository resource limits",
+            "Team must exist within the user's organization",
             "Vault data must be valid JSON format",
             "Parent repository must exist if specified",
             "Resource limits depend on subscription plan",
@@ -383,8 +383,8 @@
             "Storage name must be unique within the team",
             "User must be a member of the specified team",
             "Storage vault data cannot be null or empty",
-            "Company must not have exceeded storage resource limits",
-            "Team must exist within the user's company",
+            "Organization must not have exceeded storage resource limits",
+            "Team must exist within the user's organization",
             "Vault data must be valid JSON format",
             "Resource limits depend on subscription plan",
             "Storage names are case-sensitive",
@@ -396,10 +396,10 @@
     },
     "list": {
       "teams": {
-        "endpoint": "GetCompanyTeams",
+        "endpoint": "GetOrganizationTeams",
         "params": "lambda args: {}",
         "help": {
-          "description": "List all teams in your company",
+          "description": "List all teams in your organization",
           "details": "Displays teams with membership information, resource counts, and vault access. Only shows vault data for teams where you are a member.",
           "parameters": {},
           "examples": [
@@ -415,23 +415,23 @@
           "notes": "Requires authentication. Vault content is only visible for teams you belong to.",
           "rules": [
             "User must be authenticated with valid credentials",
-            "User must belong to a company to retrieve team information",
-            "All teams in the company are visible to all users",
+            "User must belong to a organization to retrieve team information",
+            "All teams in the organization are visible to all users",
             "Vault data (sensitive information) is only visible for teams where you are a member",
             "Teams are sorted alphabetically by name",
             "Statistics show member count, machine count, repository count, schedule count, and storage count",
-            "Encrypted vault data requires company passphrase for decryption",
-            "No cross-company access is allowed",
+            "Encrypted vault data requires organization passphrase for decryption",
+            "No cross-organization access is allowed",
             "Membership status indicator shows 1 for member, 0 for non-member",
-            "Company name is included for context"
+            "Organization name is included for context"
           ]
         }
       },
       "regions": {
-        "endpoint": "GetCompanyRegions",
+        "endpoint": "GetOrganizationRegions",
         "params": "lambda args: {}",
         "help": {
-          "description": "List all regions in your company",
+          "description": "List all regions in your organization",
           "details": "Shows geographic regions where you can deploy bridges and infrastructure. Each region can contain multiple bridges for distributed task processing.",
           "parameters": {},
           "examples": [
@@ -444,8 +444,8 @@
           "rules": [
             "User must be authenticated with a valid token",
             "Token must be active and not expired",
-            "User must belong to a company",
-            "Only regions within your company are visible",
+            "User must belong to a organization",
+            "Only regions within your organization are visible",
             "Administrators can see full vault data for all regions",
             "Non-administrators cannot see sensitive vault data",
             "Bridge count is shown for each region",
@@ -477,7 +477,7 @@
           "notes": "Bridges must be running in bridge mode to process queue items.",
           "rules": [
             "User must be authenticated with a valid token",
-            "Region must exist within your company",
+            "Region must exist within your organization",
             "Region names are case-sensitive",
             "Regular users can only see vault data for bridges they have access to through team machines",
             "Access determined by: user is member of team that has machines using the bridge",
@@ -490,16 +490,16 @@
         }
       },
       "users": {
-        "endpoint": "GetCompanyUsers",
+        "endpoint": "GetOrganizationUsers",
         "params": "lambda args: {}",
         "help": {
-          "description": "List all users in your company",
+          "description": "List all users in your organization",
           "details": "Shows all user accounts including their email, status (active/inactive), permission groups, TFA status, and last login information. Useful for user management and audit purposes.",
           "parameters": {},
           "examples": [
             {
               "command": "rediacc list users",
-              "description": "Display all company users in table format"
+              "description": "Display all organization users in table format"
             },
             {
               "command": "rediacc list users --output json | jq '.[] | select(.isActive == false)'",
@@ -512,12 +512,12 @@
             "Token must be active and not expired",
             "User account must be activated",
             "Token rotation required for security",
-            "Users can only view users from their own company",
+            "Users can only view users from their own organization",
             "Administrators can see all users and their vault data",
             "Non-administrators can only see users who share at least one team with them",
             "Vault data (sensitive information) only visible to administrators",
             "Shows permission groups (Administrators, Users, or Bridges)",
-            "Company boundary enforcement prevents cross-company visibility"
+            "Organization boundary enforcement prevents cross-organization visibility"
           ]
         }
       },
@@ -544,7 +544,7 @@
             "Only active sessions are accepted (not expired or logged out)",
             "Token rotation up to 3 times before requiring latest token",
             "Users can only see their own sessions",
-            "Company maintenance mode blocks non-administrator access",
+            "Organization maintenance mode blocks non-administrator access",
             "Two-factor authentication must be completed if enabled",
             "Sessions sorted by creation time (newest first)",
             "Shows session name, creation time, permissions, and expiration",
@@ -554,10 +554,10 @@
         }
       },
       "resource-limits": {
-        "endpoint": "GetCompanyDashboardJson",
+        "endpoint": "GetOrganizationDashboard",
         "params": "lambda args: {}",
         "help": {
-          "description": "Display company resource limits and current usage",
+          "description": "Display organization resource limits and current usage",
           "details": "Shows your subscription limits and current usage for all resource types including teams, machines, bridges, repositories, and more. Multiple subscriptions stack their limits.",
           "parameters": {},
           "examples": [
@@ -572,7 +572,7 @@
           ],
           "notes": "Useful for capacity planning and monitoring when approaching subscription limits. Returns 402 Payment Required when limits are exceeded.",
           "rules": [
-            "User must be authenticated and belong to a company",
+            "User must be authenticated and belong to a organization",
             "Resource limits are additive across multiple active subscriptions",
             "Tracks 8 resource types: regions, teams, bridges, machines, repositories, schedules, storage, users",
             "Shows current usage count vs total allowed limit",
@@ -586,7 +586,7 @@
         }
       },
       "subscription": {
-        "endpoint": "GetCompanyDashboardJson",
+        "endpoint": "GetOrganizationDashboard",
         "params": "lambda args: {}",
         "help": {
           "description": "Show subscription details and billing information",
@@ -605,7 +605,7 @@
           "notes": "Plans: COMMUNITY (free), PRO, BUSINESS, ENTERPRISE. Higher tiers offer more resources, priority levels, and features like schedules and Ceph storage.",
           "rules": [
             "User must be authenticated with valid session",
-            "Can only view subscription information for your own company",
+            "Can only view subscription information for your own organization",
             "Shows highest tier subscription when multiple are active",
             "Subscription priority: Enterprise > Business > Pro > Community",
             "Active subscriptions must have ACTIVE status and future end date",
@@ -618,10 +618,10 @@
         }
       },
       "data-graph": {
-        "endpoint": "GetCompanyDataGraphJson",
+        "endpoint": "GetOrganizationDataGraphJson",
         "params": "lambda args: {}",
         "help": {
-          "description": "Display company infrastructure as a hierarchical graph",
+          "description": "Display organization infrastructure as a hierarchical graph",
           "details": "Shows the complete infrastructure topology including regions, bridges, teams, machines, and their relationships in a graph format.",
           "parameters": {},
           "examples": [
@@ -637,8 +637,8 @@
           "notes": "Useful for understanding infrastructure topology and dependencies. JSON output can be used with graph visualization tools.",
           "rules": [
             "User must be authenticated with valid credentials",
-            "Can only view data for your own company",
-            "Administrators see all infrastructure across the company",
+            "Can only view data for your own organization",
+            "Administrators see all infrastructure across the organization",
             "Regular users only see infrastructure they have access to",
             "Access determined through team membership chain",
             "Users see teams they belong to and resources owned by those teams",
@@ -649,28 +649,28 @@
           ]
         }
       },
-      "company-vault": {
-        "endpoint": "GetCompanyVault",
+      "organization-vault": {
+        "endpoint": "GetOrganizationVault",
         "params": "lambda args: {}",
         "help": {
-          "description": "View company-wide vault configuration",
-          "details": "Displays the encrypted vault data stored at the company level. This typically contains global settings and shared credentials.",
+          "description": "View organization-wide vault configuration",
+          "details": "Displays the encrypted vault data stored at the organization level. This typically contains global settings and shared credentials.",
           "parameters": {},
           "examples": [
             {
-              "command": "rediacc list company-vault",
-              "description": "View company vault contents"
+              "command": "rediacc list organization-vault",
+              "description": "View organization vault contents"
             }
           ],
-          "notes": "Requires company admin permissions. Vault data is automatically decrypted if you have the master password configured.",
+          "notes": "Requires organization admin permissions. Vault data is automatically decrypted if you have the master password configured.",
           "rules": [
             "User must be logged in with valid credentials",
-            "Can only access vault data for your own company",
-            "Returns company's main vault content and version",
-            "Includes company name for identification",
+            "Can only access vault data for your own organization",
+            "Returns organization's main vault content and version",
+            "Includes organization name for identification",
             "Request must pass security validation",
-            "Cross-company access not permitted",
-            "GetCompanyVaults (admin-only) shows ALL vaults across organization",
+            "Cross-organization access not permitted",
+            "GetOrganizationVaults (admin-only) shows ALL vaults across organization",
             "Administrators can view decrypted credentials and sensitive data",
             "Two-factor authentication vaults excluded for security",
             "Bridge users allowed access for automated operations"
@@ -703,43 +703,43 @@
           "notes": "Returns different data based on user permissions. Admins see all resources, regular users see only accessible resources.",
           "rules": [
             "User must be authenticated with valid token",
-            "User must belong to a company",
+            "User must belong to a organization",
             "Regular users only see teams they are members of",
             "Regular users only see machines belonging to their teams",
             "Regular users only see bridges/regions with accessible machines",
             "Regular users only see users in shared teams",
-            "Administrators see all company resources",
+            "Administrators see all organization resources",
             "Optional context parameter filters data for specific use cases",
-            "Company isolation enforced - no cross-company visibility",
+            "Organization isolation enforced - no cross-organization visibility",
             "All data returned as JSON with value/label pairs"
           ]
         }
       },
-      "user-company": {
-        "endpoint": "GetUserCompany",
+      "user-organization": {
+        "endpoint": "GetUserOrganization",
         "params": "lambda args: {}",
         "help": {
-          "description": "Display which company the current user belongs to",
-          "details": "Shows the company information for the currently authenticated user. Useful for verifying you're logged into the correct company account.",
+          "description": "Display which organization the current user belongs to",
+          "details": "Shows the organization information for the currently authenticated user. Useful for verifying you're logged into the correct organization account.",
           "parameters": {},
           "examples": [
             {
-              "command": "rediacc list user-company",
-              "description": "Display current user's company"
+              "command": "rediacc list user-organization",
+              "description": "Display current user's organization"
             }
           ],
-          "notes": "Requires authentication. Shows company name and ID.",
+          "notes": "Requires authentication. Shows organization name and ID.",
           "rules": [
             "Valid authentication token required",
             "Token rotation required for security",
             "Active session must not be expired",
-            "Users can only view their own company information",
-            "No cross-company access allowed",
-            "Company name and vault data returned",
+            "Users can only view their own organization information",
+            "No cross-organization access allowed",
+            "Organization name and vault data returned",
             "Shows team count, region count, and user count statistics",
-            "Each user associated with exactly one company",
-            "Company passphrase used to decrypt vault data",
-            "Failed validation returns no company information"
+            "Each user associated with exactly one organization",
+            "Organization passphrase used to decrypt vault data",
+            "Failed validation returns no organization information"
           ]
         }
       },
@@ -788,11 +788,11 @@
           "notes": "Audit logs are retained based on subscription tier. Includes create, update, delete operations and authentication events.",
           "rules": [
             "User must be authenticated",
-            "Can only see audit logs for your own company",
+            "Can only see audit logs for your own organization",
             "Default time period is 30 days if no start date provided",
             "Start date must come before end date",
             "Default limit is 1,000 records, maximum is 10,000",
-            "Administrators see all company audit logs",
+            "Administrators see all organization audit logs",
             "Regular users only see logs for resources they have access to",
             "Entity type filtering is optional",
             "Sensitive operations masked for non-administrators",
@@ -840,7 +840,7 @@
             "User must be authenticated",
             "Entity type is required and must be valid",
             "Entity credential (GUID) is mandatory",
-            "Entity must exist in your company",
+            "Entity must exist in your organization",
             "Access rules vary by entity type and user role",
             "Maximum 5,000 records, default 500",
             "Users can view their own history, admins see all",
@@ -855,7 +855,7 @@
         "params": "lambda args: {'teamName': args.team}",
         "help": {
           "description": "List machines in a specific team",
-          "details": "Shows all machines assigned to a team including their status, assigned bridge, vault configuration, and queue statistics. Machine names are unique across the company.",
+          "details": "Shows all machines assigned to a team including their status, assigned bridge, vault configuration, and queue statistics. Machine names are unique across the organization.",
           "parameters": {
             "team": {
               "description": "Team name to list machines from (comma-separated for multiple teams)",
@@ -877,7 +877,7 @@
           "rules": [
             "Valid user authentication required with active session",
             "User must be a member of the team to see machines",
-            "Company boundary enforced - only see machines in your company",
+            "Organization boundary enforced - only see machines in your organization",
             "Multiple teams supported with comma-separated names",
             "No team filter returns machines from all your teams",
             "Shows machine details including bridge, region, queue count",
@@ -911,7 +911,7 @@
           "rules": [
             "User must be authenticated with valid token",
             "Can only view members of teams you belong to",
-            "Company boundary restriction applies",
+            "Organization boundary restriction applies",
             "Team filtering with comma-separated names supported",
             "No team specified returns members from all your teams",
             "Shows user email and activation status",
@@ -948,15 +948,15 @@
           "notes": "You must be a member of the team. Shows repository names, credentials, and vault status.",
           "rules": [
             "User must be logged in with valid credentials",
-            "User must belong to the company",
+            "User must belong to the organization",
             "User must be member of the team to view repositories",
             "Team name filtering with exact case-sensitive match",
             "Multiple teams supported with comma-separated names",
             "No team specified returns repositories from all your teams",
             "Shows repository name, GUID, and parent repository ID",
-            "Vault data decrypted using company passphrase",
+            "Vault data decrypted using organization passphrase",
             "Results sorted by team name then repository name",
-            "Three-level access control: authentication, company, team"
+            "Three-level access control: authentication, organization, team"
           ]
         }
       },
@@ -987,7 +987,7 @@
           "rules": [
             "User must be logged in with valid credentials",
             "User account must be activated",
-            "Can only access storage from your own company",
+            "Can only access storage from your own organization",
             "Must be member of the team to view storage",
             "Maintenance mode blocks non-administrator access",
             "Team name filtering supports comma-separated values",
@@ -1136,9 +1136,9 @@
           "rules": [
             "You must be logged in with valid credentials",
             "You must be a member of the team to delete it",
-            "Team must belong to your company",
+            "Team must belong to your organization",
             "'Private Team' cannot be deleted (system requirement)",
-            "Cannot delete the last team in a company",
+            "Cannot delete the last team in a organization",
             "Team must have no machines before deletion",
             "Team must have no repositories before deletion",
             "Team must have no schedules before deletion",
@@ -1187,7 +1187,7 @@
           "notes": "Check for pending queue items before deletion. The actual server is not affected. Consider updating vault to mark as decommissioned instead of deleting.",
           "rules": [
             "You must be logged in with valid user account",
-            "Must belong to the same company that owns the machine",
+            "Must belong to the same organization that owns the machine",
             "Must be an active member of the team that owns the machine",
             "Machine must exist in the specified team",
             "Cannot delete if machine has pending queue items",
@@ -1239,7 +1239,7 @@
           "notes": "Cannot delete if machines are assigned. Reassign machines first using 'update machine-bridge'. Stop bridge process before deletion.",
           "rules": [
             "User must be authenticated to perform this operation",
-            "User must belong to the same company as the bridge",
+            "User must belong to the same organization as the bridge",
             "Bridge name must exist in the specified region",
             "Bridge must not be assigned to any machines",
             "Bridge must not have active queue items in PENDING or ASSIGNED states",
@@ -1284,7 +1284,7 @@
           "notes": "WARNING: Cascades to all bridges in the region. Cannot delete if bridges have assigned machines. Clear all dependencies first.",
           "rules": [
             "User must be authenticated to perform this operation",
-            "User must belong to the same company as the region",
+            "User must belong to the same organization as the region",
             "Region name must exist in the system",
             "Region must not contain any bridges",
             "Region must not be referenced by any machines",
@@ -1416,7 +1416,7 @@
           },
           "rules": [
             "User must be authenticated to perform this operation",
-            "User must belong to the same company as the bridge",
+            "User must belong to the same organization as the bridge",
             "Bridge must exist in the system",
             "Old authentication token will be immediately invalidated",
             "New token is generated using cryptographically secure randomness",
@@ -1491,8 +1491,8 @@
           "rules": [
             "User must be authenticated to perform this operation",
             "User must be a member of the team being renamed",
-            "Current team name must exist in the company",
-            "New team name must be unique within the company",
+            "Current team name must exist in the organization",
+            "New team name must be unique within the organization",
             "New name must be between 1 and 50 characters",
             "New name cannot be empty or only whitespace",
             "Team memberships and permissions are preserved",
@@ -1523,9 +1523,9 @@
           },
           "rules": [
             "User must be authenticated to perform this operation",
-            "User must belong to the same company as the region",
-            "Current region name must exist in the company",
-            "New region name must be unique within the company",
+            "User must belong to the same organization as the region",
+            "Current region name must exist in the organization",
+            "New region name must be unique within the organization",
             "New name must be between 1 and 50 characters",
             "New name cannot be empty or only whitespace",
             "All bridges in the region remain associated",
@@ -1561,7 +1561,7 @@
           },
           "rules": [
             "User must be authenticated to perform this operation",
-            "User must belong to the same company as the bridge",
+            "User must belong to the same organization as the bridge",
             "Current bridge name must exist in the region",
             "New bridge name must be unique within the region",
             "New name must be between 1 and 50 characters",
@@ -1579,7 +1579,7 @@
         "success_msg": "Successfully updated machine name: {name} \u2192 {new_name}",
         "help": {
           "description": "Rename a machine",
-          "details": "Changes the name of an existing machine. The new name must be unique across the entire company. Active queue items continue processing.",
+          "details": "Changes the name of an existing machine. The new name must be unique across the entire organization. Active queue items continue processing.",
           "parameters": {
             "team": {
               "description": "Team that owns the machine",
@@ -1592,7 +1592,7 @@
               "example": ""
             },
             "new_name": {
-              "description": "New machine name (company-wide unique)",
+              "description": "New machine name (organization-wide unique)",
               "required": true,
               "example": "new-server"
             }
@@ -1664,7 +1664,7 @@
             "User must be authenticated to perform this operation",
             "User must be a member of the specified team",
             "Machine must exist within the team",
-            "Bridge must exist and belong to the same company",
+            "Bridge must exist and belong to the same organization",
             "Bridge and machine must be in the same region",
             "Bridge must be in an active state",
             "Previous bridge assignment will be removed",
@@ -1902,7 +1902,7 @@
           "machine": "UpdateMachineVault",
           "region": "UpdateRegionVault",
           "bridge": "UpdateBridgeVault",
-          "company": "UpdateCompanyVault",
+          "organization": "UpdateOrganizationVault",
           "repository": "UpdateRepositoryVault",
           "storage": "UpdateStorageVault",
           "schedule": "UpdateScheduleVault"
@@ -1911,7 +1911,7 @@
         "success_msg": "Successfully updated {resource_type} vault",
         "help": {
           "description": "Update vault data for any resource type",
-          "details": "Updates the encrypted vault configuration for teams, machines, regions, bridges, company, repositories, storages, or schedules. Vaults store sensitive configuration data and credentials.",
+          "details": "Updates the encrypted vault configuration for teams, machines, regions, bridges, organization, repositories, storages, or schedules. Vaults store sensitive configuration data and credentials.",
           "parameters": {
             "resource_type": {
               "description": "Type of resource to update",
@@ -1922,14 +1922,14 @@
                 "machine",
                 "region",
                 "bridge",
-                "company",
+                "organization",
                 "repository",
                 "storage",
                 "schedule"
               ]
             },
             "name": {
-              "description": "Resource name (not needed for 'company')",
+              "description": "Resource name (not needed for 'organization')",
               "required": false,
               "example": "web-server-01"
             },
@@ -1964,8 +1964,8 @@
               "description": "Update team vault from stdin"
             },
             {
-              "command": "rediacc vault set company company-settings.json",
-              "description": "Update company-wide vault"
+              "command": "rediacc vault set organization organization-settings.json",
+              "description": "Update organization-wide vault"
             }
           ],
           "notes": "Vault data is encrypted with master password. Always backup current vault before updating. Use 'inspect' commands to view current vault.",
@@ -1975,7 +1975,7 @@
             "Vault data must be valid JSON format",
             "Vault data is encrypted with master password before storage",
             "Maximum vault size is 64KB after encryption",
-            "Company vault requires company admin permissions",
+            "Organization vault requires organization admin permissions",
             "Team vault requires team membership",
             "Entity-specific vaults require team membership",
             "Previous vault data is completely replaced",
@@ -2001,7 +2001,7 @@
             "Password is never saved to disk or configuration files",
             "Required to decrypt vault data returned from API responses",
             "Password remains in memory until CLI exits or you use clear-password",
-            "Each company may have its own master password",
+            "Each organization may have its own master password",
             "Wrong password will result in garbled vault data when decrypting",
             "Password input is hidden for security (no echo to terminal)",
             "No password complexity requirements enforced by the client",
@@ -2050,10 +2050,10 @@
           "rules": [
             "This is primarily a local operation with one API call if needed",
             "User must be authenticated to check vault status",
-            "Automatically fetches company vault info if not cached",
+            "Automatically fetches organization vault info if not cached",
             "Shows if cryptography library is installed locally",
-            "Displays current company name from authentication",
-            "Indicates if company requires vault encryption",
+            "Displays current organization name from authentication",
+            "Indicates if organization requires vault encryption",
             "Shows if master password is set in current session",
             "Read-only operation that doesn't modify any data",
             "Helps troubleshoot vault access issues",
@@ -2088,12 +2088,12 @@
               "description": "Create a read-only access group"
             }
           ],
-          "notes": "Requires admin permissions. Group names must be unique within the company. Add permissions after creation.",
+          "notes": "Requires admin permissions. Group names must be unique within the organization. Add permissions after creation.",
           "rules": [
             "User must be authenticated with valid credentials",
             "Custom groups require paid subscription (Pro, Business, or Enterprise)",
             "Community plan users cannot create custom permission groups",
-            "Group name must be unique within your company",
+            "Group name must be unique within your organization",
             "Cannot use reserved names: Administrators, Users, or Bridges",
             "Maximum group name length is 100 characters",
             "Group name cannot be empty or only whitespace",
@@ -2142,7 +2142,7 @@
             "Only custom permission groups can be deleted",
             "All permissions within the group are permanently removed",
             "Deletion works on any subscription plan (including Community)",
-            "Group must exist in your company",
+            "Group must exist in your organization",
             "Operation is permanent and cannot be undone",
             "Deletion is logged in audit trail"
           ]
@@ -2180,7 +2180,7 @@
           "notes": "Permission names correspond to API endpoints. Use 'list lookup-data' to see available permissions.",
           "rules": [
             "User must be authenticated with valid credentials",
-            "Permission group must exist in your company",
+            "Permission group must exist in your organization",
             "Cannot add permissions to Administrators group (has all permissions)",
             "Cannot add permissions to Bridges group (protected system group)",
             "Permission must be a valid system permission name",
@@ -2188,7 +2188,7 @@
             "Only custom groups can have permissions added",
             "Permission names must match approved API endpoints",
             "Each addition is logged in audit trail",
-            "Company boundaries are strictly enforced"
+            "Organization boundaries are strictly enforced"
           ]
         }
       },
@@ -2230,7 +2230,7 @@
           "notes": "Takes effect immediately for all users in the group. Use 'list-group' to see current permissions.",
           "rules": [
             "User must be authenticated with valid credentials",
-            "Permission group must exist in your company",
+            "Permission group must exist in your organization",
             "Cannot modify Administrators group (protected)",
             "Cannot modify Bridges group (protected)",
             "Permission must exist in the specified group",
@@ -2264,7 +2264,7 @@
           },
           "examples": [
             {
-              "command": "rediacc permission assign john@company.com developers",
+              "command": "rediacc permission assign john@organization.com developers",
               "description": "Give John developer permissions"
             },
             {
@@ -2275,11 +2275,11 @@
           "notes": "Replaces user's current permission group. Changes take effect on next login. Requires admin permissions.",
           "rules": [
             "User must be authenticated with valid credentials",
-            "Target user must exist in your company",
-            "Permission group must exist in your company",
+            "Target user must exist in your organization",
+            "Permission group must exist in your organization",
             "Can only assign groups with equal or fewer privileges",
             "Only administrators can assign users to Bridges group",
-            "Cannot remove last active administrator from company",
+            "Cannot remove last active administrator from organization",
             "Changes take effect immediately for active sessions",
             "Higher privilege tokens are automatically downgraded",
             "Assignment is logged with token modification count",
@@ -2288,11 +2288,11 @@
         }
       },
       "list-groups": {
-        "endpoint": "GetCompanyPermissionGroups",
+        "endpoint": "GetOrganizationPermissionGroups",
         "params": "lambda args: {}",
         "help": {
           "description": "List all permission groups",
-          "details": "Shows all permission groups in the company including system groups and custom groups. Displays group names and member counts.",
+          "details": "Shows all permission groups in the organization including system groups and custom groups. Displays group names and member counts.",
           "parameters": {},
           "examples": [
             {
@@ -2308,13 +2308,13 @@
           "rules": [
             "User must be authenticated with valid credentials",
             "Only administrators can view permission groups",
-            "Shows all groups for your company (system and custom)",
+            "Shows all groups for your organization (system and custom)",
             "Displays group name, user count, and permission count",
             "Lists all permissions for each group",
             "Results sorted alphabetically by group name",
             "No filtering or pagination available",
             "Maintenance mode blocks non-admin access",
-            "Operation is company-specific",
+            "Operation is organization-specific",
             "Failed attempts are logged for security"
           ]
         }
@@ -2346,26 +2346,26 @@
           "rules": [
             "User must be authenticated with valid credentials",
             "Only administrators can view group details",
-            "Group must exist in your company",
+            "Group must exist in your organization",
             "Shows all permissions in the group alphabetically",
             "Group names are case-sensitive",
             "Works for both system and custom groups",
             "No limit on permissions displayed",
-            "Company-specific access only",
+            "Organization-specific access only",
             "Access attempts are tracked for security",
             "Returns error if group doesn't exist"
           ]
         }
       }
     },
-    "company": {
+    "organization": {
       "block-user-requests": {
-        "endpoint": "UpdateCompanyBlockUserRequests",
+        "endpoint": "UpdateOrganizationBlockUserRequests",
         "params": "lambda args: {'blockUserRequests': args.block}",
-        "success_msg": "Successfully updated company user request blocking: {block}",
+        "success_msg": "Successfully updated organization user request blocking: {block}",
         "help": {
           "description": "Block or unblock new user registration requests",
-          "details": "Controls whether new users can request accounts in your company. When blocked, only administrators can create new user accounts directly.",
+          "details": "Controls whether new users can request accounts in your organization. When blocked, only administrators can create new user accounts directly.",
           "parameters": {
             "block": {
               "description": "Block user requests (true/false)",
@@ -2375,41 +2375,41 @@
           },
           "examples": [
             {
-              "command": "rediacc company block-user-requests true",
+              "command": "rediacc organization block-user-requests true",
               "description": "Block new user registrations"
             },
             {
-              "command": "rediacc company block-user-requests false",
+              "command": "rediacc organization block-user-requests false",
               "description": "Allow new user registrations"
             }
           ],
-          "notes": "Requires company admin permissions. Existing users are not affected. Useful during maintenance or to control company growth.",
+          "notes": "Requires organization admin permissions. Existing users are not affected. Useful during maintenance or to control organization growth.",
           "rules": [
-            "Must be authenticated with company administrator permissions",
+            "Must be authenticated with organization administrator permissions",
             "When blocked, self-registration on login page is disabled",
             "Administrators can still create users manually",
             "Does not affect existing user accounts or active sessions",
             "Change takes effect immediately for new requests",
             "Pending user requests remain in queue when blocking is enabled",
-            "Useful for controlling company user growth",
+            "Useful for controlling organization user growth",
             "Can be toggled on/off as needed without data loss",
-            "Setting is stored at company level",
+            "Setting is stored at organization level",
             "Change is logged in audit trail"
           ]
         }
       },
       "update-vault": {
-        "endpoint": "UpdateCompanyVault",
+        "endpoint": "UpdateOrganizationVault",
         "params": "lambda args: {'vaultContent': args.vault_content, 'vaultVersion': args.vault_version}",
-        "success_msg": "Successfully updated company vault",
+        "success_msg": "Successfully updated organization vault",
         "help": {
-          "description": "Update company-wide vault configuration",
-          "details": "Updates the encrypted vault containing company-wide settings, credentials, and configuration that apply to all teams and users.",
+          "description": "Update organization-wide vault configuration",
+          "details": "Updates the encrypted vault containing organization-wide settings, credentials, and configuration that apply to all teams and users.",
           "parameters": {
             "vault-file": {
               "description": "File containing JSON vault data",
               "required": false,
-              "example": "company-vault.json"
+              "example": "organization-vault.json"
             },
             "vault-version": {
               "description": "Vault schema version",
@@ -2424,10 +2424,10 @@
             }
           },
           "rules": [
-            "Must be authenticated with company administrator permissions",
+            "Must be authenticated with organization administrator permissions",
             "Vault data must be valid JSON format",
             "Maximum vault size is 64KB after encryption",
-            "Vault is encrypted with company master password",
+            "Vault is encrypted with organization master password",
             "Previous vault contents are completely replaced",
             "Common fields: UNIVERSAL_USER_NAME, UNIVERSAL_USER_ID",
             "Changes propagate to all teams and users",
@@ -2438,25 +2438,25 @@
         }
       },
       "get-vaults": {
-        "endpoint": "GetCompanyVaults",
+        "endpoint": "GetOrganizationVaults",
         "params": "lambda args: {}",
         "help": {
-          "description": "Retrieve all company vault data",
-          "details": "Fetches all vault configurations stored at the company level, including encrypted settings and credentials. Useful for backup or inspection.",
+          "description": "Retrieve all organization vault data",
+          "details": "Fetches all vault configurations stored at the organization level, including encrypted settings and credentials. Useful for backup or inspection.",
           "examples": [
             {
-              "command": "rediacc company get-vaults",
-              "description": "Display all company vaults"
+              "command": "rediacc organization get-vaults",
+              "description": "Display all organization vaults"
             },
             {
-              "command": "rediacc company get-vaults --output json > backup.json",
+              "command": "rediacc organization get-vaults --output json > backup.json",
               "description": "Backup vaults to file"
             }
           ],
-          "notes": "Requires company admin permissions. Vault data is returned encrypted unless master password is set.",
+          "notes": "Requires organization admin permissions. Vault data is returned encrypted unless master password is set.",
           "rules": [
-            "Must be authenticated with company administrator permissions",
-            "Returns all vault data stored at company level",
+            "Must be authenticated with organization administrator permissions",
+            "Returns all vault data stored at organization level",
             "Vault data remains encrypted in response",
             "Decryption requires master password to be set",
             "Includes vault version information",
@@ -2469,11 +2469,11 @@
         }
       },
       "update-vaults": {
-        "endpoint": "UpdateCompanyVaults",
+        "endpoint": "UpdateOrganizationVaults",
         "params": "lambda args: {'updates': args.updates}",
-        "success_msg": "Successfully updated company vaults",
+        "success_msg": "Successfully updated organization vaults",
         "help": {
-          "description": "Bulk update multiple company vaults",
+          "description": "Bulk update multiple organization vaults",
           "details": "Updates multiple vault configurations at once. Useful for restoring from backup or migrating settings.",
           "parameters": {
             "vault": {
@@ -2494,11 +2494,11 @@
           },
           "rules": [
             "User must be authenticated with valid credentials",
-            "Only administrators can update company vaults",
+            "Only administrators can update organization vaults",
             "Bulk updates multiple vaults in single operation",
             "User login attempts blocked during update",
-            "Cannot update if company has Global Bridge with cloud management",
-            "All vaults must belong to entities within your company",
+            "Cannot update if organization has Global Bridge with cloud management",
+            "All vaults must belong to entities within your organization",
             "Cannot update vault if newer version exists",
             "TFA vaults cannot be updated through this operation",
             "Either all updates succeed or none are applied",
@@ -2507,27 +2507,27 @@
         }
       },
       "export-data": {
-        "endpoint": "ExportCompanyData",
+        "endpoint": "ExportOrganizationData",
         "params": "lambda args: {}",
-        "success_msg": "Successfully exported company data",
+        "success_msg": "Successfully exported organization data",
         "help": {
-          "description": "Export all company data to JSON format",
-          "details": "Exports complete company configuration including teams, users, permissions, regions, bridges, and machines. Vault data is included in encrypted form.",
+          "description": "Export all organization data to JSON format",
+          "details": "Exports complete organization configuration including teams, users, permissions, regions, bridges, and machines. Vault data is included in encrypted form.",
           "parameters": {},
           "examples": [
             {
-              "command": "rediacc company export-data > company-backup.json",
-              "description": "Export company data to file"
+              "command": "rediacc organization export-data > organization-backup.json",
+              "description": "Export organization data to file"
             },
             {
-              "command": "rediacc company export-data | jq '.teams'",
+              "command": "rediacc organization export-data | jq '.teams'",
               "description": "View exported teams data"
             }
           ],
           "notes": "Requires admin permissions. Export includes all entity configurations and relationships. Vault data remains encrypted.",
           "rules": [
             "Must be authenticated with administrator permissions",
-            "Exports all company entities and configurations",
+            "Exports all organization entities and configurations",
             "Vault data is included in encrypted form",
             "Export can be large for companies with many resources",
             "Includes timestamps and version information",
@@ -2538,17 +2538,17 @@
         }
       },
       "import-data": {
-        "endpoint": "ImportCompanyData",
-        "params": "lambda args: {'companyDataJson': get_vault_data(args) or '{}', 'importMode': getattr(args, 'import_mode', 'skip')}",
-        "success_msg": "Successfully imported company data",
+        "endpoint": "ImportOrganizationData",
+        "params": "lambda args: {'organizationDataJson': get_vault_data(args) or '{}', 'importMode': getattr(args, 'import_mode', 'skip')}",
+        "success_msg": "Successfully imported organization data",
         "help": {
-          "description": "Import company data from JSON",
-          "details": "Imports company configuration from a previously exported JSON file. Supports skip mode (default) which skips existing entities, or override mode which updates existing entities.",
+          "description": "Import organization data from JSON",
+          "details": "Imports organization configuration from a previously exported JSON file. Supports skip mode (default) which skips existing entities, or override mode which updates existing entities.",
           "parameters": {
             "vault-file": {
-              "description": "File containing exported company data",
+              "description": "File containing exported organization data",
               "required": true,
-              "example": "company-backup.json"
+              "example": "organization-backup.json"
             },
             "import-mode": {
               "description": "Import mode: skip or override",
@@ -2559,11 +2559,11 @@
           },
           "examples": [
             {
-              "command": "rediacc company import-data --vault-file backup.json",
+              "command": "rediacc organization import-data --vault-file backup.json",
               "description": "Import with skip mode (default)"
             },
             {
-              "command": "rediacc company import-data --vault-file backup.json --import-mode override",
+              "command": "rediacc organization import-data --vault-file backup.json --import-mode override",
               "description": "Import with override mode"
             }
           ],
@@ -2573,7 +2573,7 @@
             "Import data must be from same or compatible version",
             "Skip mode: existing entities are preserved",
             "Override mode: existing entities are updated",
-            "Cannot import if company passphrase has changed",
+            "Cannot import if organization passphrase has changed",
             "User accounts must match email addresses",
             "Import creates audit log entries",
             "Partial imports may occur if errors encountered",
@@ -2605,11 +2605,11 @@
             "User must be authenticated with valid credentials",
             "Regular users can only view their own audit history",
             "Team members can view audit for team resources",
-            "Administrators can view all company entity audits",
+            "Administrators can view all organization entity audits",
             "Audit retention varies by subscription tier (7-365 days)",
             "Maximum 100 records shown at once",
             "Sensitive operations masked for non-administrators",
-            "Entity must exist and belong to your company",
+            "Entity must exist and belong to your organization",
             "Region, bridge, permissions require admin access",
             "Results sorted newest to oldest"
           ]
@@ -2630,7 +2630,7 @@
             "email": {
               "description": "Email address of user to activate",
               "required": true,
-              "example": "newuser@company.com"
+              "example": "newuser@organization.com"
             },
             "code": {
               "description": "Activation code (default: 111111)",
@@ -2640,11 +2640,11 @@
           },
           "examples": [
             {
-              "command": "rediacc user activate newuser@company.com",
+              "command": "rediacc user activate newuser@organization.com",
               "description": "Activate with default code"
             },
             {
-              "command": "rediacc user activate admin@company.com --code 654321",
+              "command": "rediacc user activate admin@organization.com --code 654321",
               "description": "Activate with custom code"
             }
           ],
@@ -2658,7 +2658,7 @@
             "Activation code is deleted after successful use",
             "Account becomes active and can log in",
             "User can join teams after activation",
-            "Counts toward company's active user limit",
+            "Counts toward organization's active user limit",
             "Activation is logged in audit trail"
           ]
         }
@@ -2675,7 +2675,7 @@
             "email": {
               "description": "Email address of user to deactivate",
               "required": true,
-              "example": "user@company.com"
+              "example": "user@organization.com"
             },
             "force": {
               "description": "Skip confirmation prompt",
@@ -2685,11 +2685,11 @@
           },
           "examples": [
             {
-              "command": "rediacc user deactivate employee@company.com",
+              "command": "rediacc user deactivate employee@organization.com",
               "description": "Deactivate with confirmation"
             },
             {
-              "command": "rediacc user deactivate contractor@company.com --force",
+              "command": "rediacc user deactivate contractor@organization.com --force",
               "description": "Deactivate without confirmation"
             }
           ],
@@ -2719,21 +2719,21 @@
             "current_email": {
               "description": "Current email address",
               "required": true,
-              "example": "old@company.com"
+              "example": "old@organization.com"
             },
             "new_email": {
               "description": "New email address",
               "required": true,
-              "example": "new@company.com"
+              "example": "new@organization.com"
             }
           },
           "examples": [
             {
-              "command": "rediacc user update-email old@company.com new@company.com",
+              "command": "rediacc user update-email old@organization.com new@organization.com",
               "description": "Change user's email"
             },
             {
-              "command": "rediacc user update-email jane.doe@company.com jane.smith@company.com",
+              "command": "rediacc user update-email jane.doe@organization.com jane.smith@organization.com",
               "description": "Update email after name change"
             }
           ],
@@ -2742,7 +2742,7 @@
             "Requires user management or admin permissions",
             "New email must not already exist in system",
             "New email must be valid email format",
-            "Cannot change email to one from different company domain",
+            "Cannot change email to one from different organization domain",
             "User's active sessions remain valid",
             "All permissions and team memberships preserved",
             "Audit history updated with both emails",
@@ -2776,12 +2776,12 @@
               "description": "Change password directly (less secure)"
             }
           ],
-          "notes": "Requires current authentication. Password requirements depend on company policy. After change, all sessions are invalidated - you must log in again.",
+          "notes": "Requires current authentication. Password requirements depend on organization policy. After change, all sessions are invalidated - you must log in again.",
           "rules": [
             "User must be authenticated with valid session",
             "Session-based identity verification (no current password needed)",
             "New password must be provided as 32-byte hash",
-            "Password is encrypted with company passphrase",
+            "Password is encrypted with organization passphrase",
             "Change takes effect immediately",
             "Current session remains active (not logged out)",
             "Other sessions remain valid until expiration",
@@ -2815,7 +2815,7 @@
           "notes": "Request hashes are provided during login attempts. Status includes pending, authorized, or expired.",
           "rules": [
             "Requires active authentication token to display status",
-            "Shows current user email, company, and assigned teams",
+            "Shows current user email, organization, and assigned teams",
             "Displays token creation time and expiration status",
             "Lists all permission groups assigned to the user",
             "Shows whether TFA is enabled for the account",
@@ -2857,7 +2857,7 @@
             "Some operations may require approval from another admin",
             "Elevation automatically expires after timeout period",
             "Failed elevation attempts are logged and may trigger alerts",
-            "Cannot be used to bypass company-level restrictions",
+            "Cannot be used to bypass organization-level restrictions",
             "Revoked immediately if suspicious activity is detected"
           ]
         }
@@ -2886,18 +2886,18 @@
           },
           "examples": [
             {
-              "command": "rediacc team-member add dev-team john@company.com",
+              "command": "rediacc team-member add dev-team john@organization.com",
               "description": "Add John to development team"
             },
             {
-              "command": "rediacc team-member add production admin@company.com",
+              "command": "rediacc team-member add production admin@organization.com",
               "description": "Add admin to production team"
             }
           ],
           "notes": "User must exist and be activated. You must be a team member to add others. Changes take effect immediately.",
           "rules": [
-            "Requires team admin or company admin permissions",
-            "User must already have an account in the company",
+            "Requires team admin or organization admin permissions",
+            "User must already have an account in the organization",
             "User must have activated their account",
             "Cannot add users from other companies",
             "Users can be members of multiple teams",
@@ -2916,7 +2916,7 @@
         "success_msg": "Successfully removed {email} from team {team}",
         "help": {
           "description": "Remove user from team",
-          "details": "Revokes a user's team membership, removing their access to all team resources. The user remains in the company.",
+          "details": "Revokes a user's team membership, removing their access to all team resources. The user remains in the organization.",
           "parameters": {
             "team": {
               "description": "Team name",
@@ -2936,17 +2936,17 @@
               "description": "Remove contractor with confirmation"
             },
             {
-              "command": "rediacc team-member remove production ex-employee@company.com --force",
+              "command": "rediacc team-member remove production ex-employee@organization.com --force",
               "description": "Force remove without confirmation"
             }
           ],
           "notes": "Cannot remove last team member. User loses access immediately. Consider impact on active work.",
           "rules": [
-            "Requires team admin or company admin permissions",
+            "Requires team admin or organization admin permissions",
             "Cannot remove the last admin from a team",
             "User immediately loses access to all team resources",
             "Active sessions for team resources are terminated",
-            "Does not delete the user account from the company",
+            "Does not delete the user account from the organization",
             "User can be re-added to the team later if needed",
             "Removal is logged in audit trail",
             "Any running operations by the user continue to completion",
@@ -4843,10 +4843,10 @@
       }
     },
     "create": {
-      "company": [
+      "organization": [
         {
           "name": "name",
-          "help": "Company name"
+          "help": "Organization name"
         },
         {
           "name": "--email",
@@ -5057,14 +5057,14 @@
         }
       ],
       "data-graph": [],
-      "company-vault": [],
+      "organization-vault": [],
       "lookup-data": [
         {
           "name": "--context",
           "help": "Context filter (e.g., machine_create, queue_create)"
         }
       ],
-      "user-company": [],
+      "user-organization": [],
       "audit-logs": [
         {
           "name": "--start-date",
@@ -5530,7 +5530,7 @@
         }
       ]
     },
-    "company": {
+    "organization": {
       "block-user-requests": [
         {
           "name": "block",
@@ -5568,11 +5568,11 @@
       "import-data": [
         {
           "name": "--vault",
-          "help": "JSON company data to import"
+          "help": "JSON organization data to import"
         },
         {
           "name": "--vault-file",
-          "help": "File containing JSON company data"
+          "help": "File containing JSON organization data"
         },
         {
           "name": "--import-mode",

@@ -199,18 +199,18 @@ class LoginWindow(BaseWindow):
                     self.root.after(0, self.show_tfa_field)
                 elif token and is_authorized:
                     # Save token and complete login
-                    company = auth_data.get('companyName', '')
-                    vault_company = auth_data.get('vaultCompanyName')
+                    organization = auth_data.get('organizationName', '')
+                    vault_organization = auth_data.get('vaultOrganizationName')
                     
                     TokenManager.set_token(
                         token,
                         email=email,
-                        company=company,
-                        vault_company=vault_company
+                        organization=organization,
+                        vault_organization=vault_organization
                     )
                     
                     # Save master password if provided
-                    if master_password.strip() and vault_company:
+                    if master_password.strip() and vault_organization:
                         TokenManager.set_master_password(master_password)
                     
                     self.root.after(0, self.login_success)

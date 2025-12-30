@@ -51,7 +51,7 @@ def get_repository_environment(
     datastore_path = connection_info.get('datastore', '') if connection_info else ''
 
     # Get universal user info
-    universal_user_name, universal_user_id, company_id = _get_universal_user_info()
+    universal_user_name, universal_user_id, organization_id = _get_universal_user_info()
 
     # Get repository network ID from API
     repository_network_id = repository_info.get('repositoryNetworkId') or repository_info.get('repoNetworkId', 0) if repository_info else 0
@@ -124,9 +124,9 @@ def get_machine_environment(
         connection_info = get_machine_connection_info(machine_info)
 
     # Get universal user info (still needed for other purposes, but not for path construction)
-    universal_user_name, universal_user_id, company_id = _get_universal_user_info()
+    universal_user_name, universal_user_id, organization_id = _get_universal_user_info()
 
-    # Datastore path is now direct (no user/company isolation)
+    # Datastore path is now direct (no user/organization isolation)
     datastore_path = connection_info['datastore']
 
     # Build environment variables dictionary

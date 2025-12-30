@@ -340,7 +340,7 @@ class SuperClient:
                 print(f"DEBUG: Retry attempt: {retry_count}", file=sys.stderr)
 
         # Ensure vault info is loaded (for CLI usage)
-        if (endpoint != 'GetCompanyVault' and self.should_use_vault_encryption and
+        if (endpoint != 'GetOrganizationVault' and self.should_use_vault_encryption and
             self.config_manager and hasattr(self.config_manager, '_ensure_vault_info')):
             self.config_manager._ensure_vault_info()
             self._show_vault_warning_if_needed()
@@ -375,7 +375,7 @@ class SuperClient:
             not self.config_manager.get_master_password() and 
             not self._vault_warning_shown):
             from .config import colorize
-            print(colorize("Warning: Your company requires vault encryption but no master password is set.", 'YELLOW'))
+            print(colorize("Warning: Your organization requires vault encryption but no master password is set.", 'YELLOW'))
             print(colorize("Vault fields will not be decrypted. Use 'rediacc vault set-password' to set it.", 'YELLOW'))
             self._vault_warning_shown = True
     
@@ -440,16 +440,16 @@ class SuperClient:
                 config = self.config_manager.config
                 TokenManager.set_token(new_token, 
                                      email=config.get('email'),
-                                     company=config.get('company'),
-                                     vault_company=config.get('vault_company'))
+                                     organization=config.get('organization'),
+                                     vault_organization=config.get('vault_organization'))
                 if os.environ.get('REDIACC_DEBUG'):
                     print("DEBUG: Token updated via CLI config manager", file=sys.stderr)
             else:
                 auth_info = TokenManager.get_auth_info()
                 TokenManager.set_token(new_token,
                                      email=auth_info.get('email') if auth_info else None,
-                                     company=auth_info.get('company') if auth_info else None,
-                                     vault_company=auth_info.get('vault_company') if auth_info else None)
+                                     organization=auth_info.get('organization') if auth_info else None,
+                                     vault_organization=auth_info.get('vault_organization') if auth_info else None)
                 if os.environ.get('REDIACC_DEBUG'):
                     print("DEBUG: Token updated via GUI auth info", file=sys.stderr)
         elif os.environ.get('REDIACC_DEBUG'):
@@ -460,21 +460,21 @@ class SuperClient:
         """Ensure vault info is loaded from API if needed (CLI-specific)"""
         if not (self.config_manager and self.config_manager.needs_vault_info_fetch()):
             return
-        
+
         self.config_manager.mark_vault_info_fetched()
-        company_info = self.get_company_vault()
-        if not company_info:
+        organization_info = self.get_organization_vault()
+        if not organization_info:
             return
-        
+
         email = self.config_manager.config.get('email')
         token = TokenManager.get_token()
         if email and token:
             self.config_manager.set_auth(
-                email, token, company_info.get('companyName'), company_info.get('vaultCompany'))
-    
-    def get_company_vault(self):
-        """Get company vault information from API (CLI-specific)"""
-        response = self.token_request("GetCompanyVault", {})
+                email, token, organization_info.get('organizationName'), organization_info.get('vaultOrganization'))
+
+    def get_organization_vault(self):
+        """Get organization vault information from API (CLI-specific)"""
+        response = self.token_request("GetOrganizationVault", {})
         
         if response.get('error'):
             return None
@@ -488,24 +488,24 @@ class SuperClient:
             if 'nextRequestToken' in row:
                 continue
             
-            # Get vault content and company credential
+            # Get vault content and organization credential
             vault_content = row.get('vaultContent') or row.get('VaultContent', '{}')
-            company_credential = row.get('companyCredential') or row.get('CompanyCredential')
-            
-            # Parse vault content and add COMPANY_ID
+            organization_credential = row.get('organizationCredential') or row.get('OrganizationCredential')
+
+            # Parse vault content and add ORGANIZATION_ID
             try:
                 vault_dict = json.loads(vault_content) if vault_content and vault_content != '-' else {}
-                if company_credential:
-                    vault_dict['COMPANY_ID'] = company_credential
+                if organization_credential:
+                    vault_dict['ORGANIZATION_ID'] = organization_credential
                 vault_json = json.dumps(vault_dict)
             except (json.JSONDecodeError, TypeError):
                 vault_json = vault_content
-            
+
             return {
-                'companyName': row.get('companyName') or row.get('CompanyName', ''),
-                'companyVault': vault_json,
-                'vaultCompany': row.get('vaultCompany') or row.get('VaultCompany', ''),
-                'companyCredential': company_credential
+                'organizationName': row.get('organizationName') or row.get('OrganizationName', ''),
+                'organizationVault': vault_json,
+                'vaultOrganization': row.get('vaultOrganization') or row.get('VaultOrganization', ''),
+                'organizationCredential': organization_credential
             }
         
         return None
@@ -554,13 +554,13 @@ class SuperClient:
     
     def get_universal_user_info(self) -> Tuple[str, str, Optional[str]]:
         """Get universal user info from environment or config
-        Returns: (universal_user_name, universal_user_id, company_id)
+        Returns: (universal_user_name, universal_user_id, organization_id)
         """
         return EnvironmentConfig.get_universal_user_info()
     
-    def get_company_vault_defaults(self) -> Dict[str, Any]:
-        """Get company vault defaults from environment"""
-        return EnvironmentConfig.get_company_vault_defaults()
+    def get_organization_vault_defaults(self) -> Dict[str, Any]:
+        """Get organization vault defaults from environment"""
+        return EnvironmentConfig.get_organization_vault_defaults()
     
     def get_universal_user_name(self) -> str:
         """Get universal user name with guaranteed fallback"""
@@ -577,7 +577,7 @@ class SuperClient:
         headers = self._get_special_headers(endpoint, args)
 
         # Unauthenticated endpoints that should NOT send a token
-        unauthenticated_endpoints = ['CreateNewCompany', 'ActivateUserAccount',
+        unauthenticated_endpoints = ['CreateNewOrganization', 'ActivateUserAccount',
                                    'CreateAuthenticationRequest', 'IsRegistered']
 
         # Use stored token for authenticated endpoints, empty string for unauthenticated
@@ -629,7 +629,7 @@ class SuperClient:
         special_responses = {
             'CreateAuthenticationRequest': {
                 'email': args.get('email'),
-                'company': None,
+                'organization': None,
                 'vault_encryption_enabled': False,
                 'master_password_set': False
             },
@@ -651,8 +651,8 @@ class SuperClient:
             'CreateAuthenticationRequest': {'name': args.get('name', args.get('session_name', 'CLI Session'))},
             'PrivilegeAuthenticationRequest': {'TFACode': args.get('tfaCode', '')},
             'ActivateUserAccount': {'activationCode': args.get('activationCode', '')},
-            'CreateNewCompany': {
-                'companyName': args.get('companyName', ''),
+            'CreateNewOrganization': {
+                'organizationName': args.get('organizationName', ''),
                 **({'subscriptionPlan': args['subscriptionPlan']} if 'subscriptionPlan' in args else {})
             }
         }
@@ -662,7 +662,7 @@ class SuperClient:
     def _get_special_headers(self, endpoint: str, args: Dict[str, Any]) -> Optional[Dict[str, str]]:
         """Get special headers for certain endpoints"""
         # Endpoints that need email and passwordHash in headers
-        auth_endpoints = ['CreateNewCompany', 'ActivateUserAccount', 'CreateAuthenticationRequest']
+        auth_endpoints = ['CreateNewOrganization', 'ActivateUserAccount', 'CreateAuthenticationRequest']
         if endpoint in auth_endpoints:
             headers = {
                 'Rediacc-UserEmail': args.get('email', ''),
@@ -703,7 +703,7 @@ class SimpleConfigManager:
     
     def has_vault_encryption(self):
         auth_info = TokenManager.get_auth_info()
-        return auth_info.get('vault_company') if auth_info else False
+        return auth_info.get('vault_organization') if auth_info else False
     
     def needs_vault_info_fetch(self):
         return False
@@ -725,6 +725,6 @@ def get_universal_user_info() -> Tuple[str, str, Optional[str]]:
     """Get universal user info from environment or config"""
     return client.get_universal_user_info()
 
-def get_company_vault_defaults() -> Dict[str, Any]:
-    """Get company vault defaults from environment"""
-    return client.get_company_vault_defaults()
+def get_organization_vault_defaults() -> Dict[str, Any]:
+    """Get organization vault defaults from environment"""
+    return client.get_organization_vault_defaults()

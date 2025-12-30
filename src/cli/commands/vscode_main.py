@@ -255,7 +255,7 @@ def launch_vscode_repo(args):
     conn.connect()
 
     # Get universal user info
-    universal_user_name, universal_user_id, company_id = _get_universal_user_info()
+    universal_user_name, universal_user_id, organization_id = _get_universal_user_info()
     universal_user = resolve_universal_user(
         conn.connection_info.get('universal_user'),
         universal_user_name
@@ -382,7 +382,7 @@ def launch_vscode_machine(args):
     connection_info = get_machine_connection_info(machine_info)
 
     # Get universal user info
-    universal_user_name, universal_user_id, company_id = _get_universal_user_info()
+    universal_user_name, universal_user_id, organization_id = _get_universal_user_info()
     universal_user = resolve_universal_user(
         connection_info.get('universal_user'),
         universal_user_name

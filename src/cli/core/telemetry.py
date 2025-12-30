@@ -93,11 +93,11 @@ class TelemetryService:
                 self._log_error(f"Failed to initialize telemetry: {e}")
                 return False
 
-    def set_user_context(self, email: Optional[str] = None, company: Optional[str] = None, **kwargs):
+    def set_user_context(self, email: Optional[str] = None, organization: Optional[str] = None, **kwargs):
         """Set user context for telemetry"""
         self.user_context.update({
             'email_domain': email.split('@')[1] if email and '@' in email else 'unknown',
-            'company': company or 'unknown',
+            'organization': organization or 'unknown',
             **kwargs
         })
 

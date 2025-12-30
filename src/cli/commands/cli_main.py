@@ -116,7 +116,7 @@ def camel_to_title(name):
         'regionName': 'Region', 'bridgeName': 'Bridge',
         'machineName': 'Machine', 'repoName': 'Repository',
         'storageName': 'Storage', 'scheduleName': 'Schedule',
-        'userEmail': 'Email', 'companyName': 'Company',
+        'userEmail': 'Email', 'organizationName': 'Organization',
         'hasAccess': 'Access', 'isMember': 'Member',
         'activated': 'Active', 'taskId': 'Task ID',
         'itemCount': 'Count', 'newUserEmail': 'Email',
@@ -395,7 +395,7 @@ class CommandHandler:
         # For list commands or permission list commands, format the output
         if cmd_type == 'list' or cmd_type == 'inspect' or (cmd_type == 'permission' and resource_type in ['list-groups', 'list-group']) or \
            (cmd_type == 'team-member' and resource_type == 'list') or \
-           (cmd_type == 'company' and resource_type == 'get-vaults'):
+           (cmd_type == 'organization' and resource_type == 'get-vaults'):
             if response.get('error'):
                 output = format_output(None, self.output_format, None, response['error'])
                 print(output)
@@ -1040,7 +1040,7 @@ def reorder_args(argv):
     # Commands that have subcommands
     # Note: workflow removed - now routed via dispatcher
     subcommand_cmds = {'create', 'list', 'update', 'rm', 'permission',
-                       'team-member', 'bridge', 'company', 'audit', 'inspect',
+                       'team-member', 'bridge', 'organization', 'audit', 'inspect',
                        'distributed-storage', 'auth'}
     
     # Separate script name, global options, and command/args
@@ -1327,7 +1327,7 @@ def main():
 
     auth_not_required_commands = {
         ('user', 'activate'),
-        ('create', 'company')
+        ('create', 'organization')
     }
     
     standalone_commands = ['bridge']
