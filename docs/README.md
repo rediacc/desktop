@@ -82,19 +82,19 @@ rediacc.bat setup --auto
 ### File Operations
 ```bash
 # Upload files
-./rediacc sync upload --local ./myproject --machine server --repo webapp
+./rediacc sync upload --local ./myproject --machine server --repository webapp
 
 # Download files
-./rediacc sync download --machine server --repo webapp --local ./backup
+./rediacc sync download --machine server --repository webapp --local ./backup
 
 # Mirror directories
-./rediacc sync upload --local ./src --machine server --repo code --mirror
+./rediacc sync upload --local ./src --machine server --repository code --mirror
 ```
 
 ### Terminal Access
 ```bash
 # Access repository environment
-./rediacc term --machine server --repo webapp
+./rediacc term --machine server --repository webapp
 
 # Execute single command
 ./rediacc term --machine server --command "docker ps"

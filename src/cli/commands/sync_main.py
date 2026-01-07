@@ -236,7 +236,7 @@ def upload(args):
     with conn.ssh_context() as ssh_conn:
         ssh_cmd = get_rsync_ssh_command(ssh_conn.ssh_opts)
         
-        dest_path = f"{conn.ssh_destination}:{conn.repo_paths['mount_path']}/"
+        dest_path = f"{conn.ssh_destination}:{conn.repository_paths['mount_path']}/"
         source = str(source_path) + ('/' if source_path.is_dir() and not str(source_path).endswith('/') else '')
         
         print("Starting rsync transfer...")
@@ -256,7 +256,7 @@ def download(args):
     with conn.ssh_context() as ssh_conn:
         ssh_cmd = get_rsync_ssh_command(ssh_conn.ssh_opts)
         
-        source_path = f"{conn.ssh_destination}:{conn.repo_paths['mount_path']}/"
+        source_path = f"{conn.ssh_destination}:{conn.repository_paths['mount_path']}/"
         dest = str(dest_path) + ('/' if not str(dest_path).endswith('/') else '')
         
         print("Starting rsync transfer...")

@@ -79,12 +79,12 @@ def connect_to_machine(args):
     if not ssh_key:
         error_exit(MESSAGES.get('ssh_key_not_found', 'SSH key not found').format(team=args.team))
 
-    host_entry = connection_info.get('host_entry')
+    known_hosts = connection_info.get('known_hosts')
 
-    if not host_entry:
+    if not known_hosts:
         error_exit("Security Error: No host key found in machine vault. Contact your administrator to add the host key.")
 
-    with SSHConnection(ssh_key, host_entry, port) as ssh_conn:
+    with SSHConnection(ssh_key, known_hosts, port) as ssh_conn:
         if ssh_conn.is_using_agent:
             print_message('ssh_agent_setup', pid=ssh_conn.agent_pid)
         
@@ -125,19 +125,19 @@ def connect_to_terminal(args):
     logger.debug(f"  - Team: {args.team}")
     logger.debug(f"  - Machine: {args.machine}")
     logger.debug(f"  - Repository: {args.repository}")
-    logger.debug(f"  - repo_guid: {conn.repo_guid}")
-    logger.debug(f"  - mount_path: {conn.repo_paths['mount_path']}")
+    logger.debug(f"  - repository_guid: {conn.repository_guid}")
+    logger.debug(f"  - mount_path: {conn.repository_paths['mount_path']}")
 
     ssh_key = get_ssh_key_from_vault(args.team)
     if not ssh_key:
         error_exit(MESSAGES.get('ssh_key_not_found', 'SSH key not found').format(team=args.team))
 
-    host_entry = conn.connection_info.get('host_entry')
+    known_hosts = conn.connection_info.get('known_hosts')
 
-    if not host_entry:
+    if not known_hosts:
         error_exit("Security Error: No host key found in repository machine vault. Contact your administrator to add the host key.")
 
-    with SSHConnection(ssh_key, host_entry, port) as ssh_conn:
+    with SSHConnection(ssh_key, known_hosts, port) as ssh_conn:
         if ssh_conn.is_using_agent:
             print_message('ssh_agent_setup', pid=ssh_conn.agent_pid)
         # Get environment variables using shared module (DRY principle)
@@ -145,8 +145,8 @@ def connect_to_terminal(args):
 
         env_vars = get_repository_environment(args.team, args.machine, args.repository,
                                               connection_info=conn.connection_info,
-                                              repository_paths=conn.repo_paths,
-                                              repository_info=conn.repo_info)
+                                              repository_paths=conn.repository_paths,
+                                              repository_info=conn.repository_info)
 
         cd_logic = get_config_value('cd_logic', 'basic')
         
@@ -235,12 +235,12 @@ def connect_to_container(args):
     if not ssh_key:
         error_exit(MESSAGES.get('ssh_key_not_found', 'SSH key not found').format(team=args.team))
 
-    host_entry = conn.connection_info.get('host_entry')
+    known_hosts = conn.connection_info.get('known_hosts')
 
-    if not host_entry:
+    if not known_hosts:
         error_exit("Security Error: No host key found in repository machine vault. Contact your administrator to add the host key.")
 
-    with SSHConnection(ssh_key, host_entry, port) as ssh_conn:
+    with SSHConnection(ssh_key, known_hosts, port) as ssh_conn:
         if ssh_conn.is_using_agent:
             print_message('ssh_agent_setup', pid=ssh_conn.agent_pid)
         # Get environment variables using shared module (DRY principle)
@@ -248,8 +248,8 @@ def connect_to_container(args):
 
         env_vars = get_repository_environment(args.team, args.machine, args.repository,
                                               connection_info=conn.connection_info,
-                                              repository_paths=conn.repo_paths,
-                                              repository_info=conn.repo_info)
+                                              repository_paths=conn.repository_paths,
+                                              repository_info=conn.repository_info)
 
         universal_user = conn.connection_info.get('universal_user', 'rediacc')
         ssh_cmd = ['ssh', '-tt', *ssh_conn.ssh_opts.split(), conn.ssh_destination]

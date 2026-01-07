@@ -18,20 +18,20 @@ Key features:
 
 ```bash
 # Basic upload
-rediacc-sync upload --local ./myproject --machine server --repo webapp
+rediacc-sync upload --local ./myproject --machine server --repository webapp
 
 # With team specification
-rediacc-sync upload --local ./src --machine dev-server --repo backend --team Development
+rediacc-sync upload --local ./src --machine dev-server --repository backend --team Development
 ```
 
 ### Download Files
 
 ```bash
 # Basic download
-rediacc-sync download --machine server --repo webapp --local ./backup
+rediacc-sync download --machine server --repository webapp --local ./backup
 
 # With verification
-rediacc-sync download --machine server --repo webapp --local ./backup --verify
+rediacc-sync download --machine server --repository webapp --local ./backup --verify
 ```
 
 ## Advanced Options
@@ -42,10 +42,10 @@ Mirror mode ensures the destination is an exact copy of the source by deleting f
 
 ```bash
 # Upload with mirror (deletes remote files not in local)
-rediacc-sync upload --local ./dist --machine prod --repo frontend --mirror --confirm
+rediacc-sync upload --local ./dist --machine prod --repository frontend --mirror --confirm
 
 # Download with mirror (deletes local files not in remote)
-rediacc-sync download --machine backup --repo archive --local ./restore --mirror --confirm
+rediacc-sync download --machine backup --repository archive --local ./restore --mirror --confirm
 ```
 
 **Warning**: Always use `--confirm` with `--mirror` to preview changes before execution.
@@ -56,11 +56,11 @@ Exclude files or patterns from synchronization:
 
 ```bash
 # Single exclusion
-rediacc-sync upload --local ./app --machine server --repo api \
+rediacc-sync upload --local ./app --machine server --repository api \
   --exclude "*.log"
 
 # Multiple exclusions
-rediacc-sync upload --local ./app --machine server --repo api \
+rediacc-sync upload --local ./app --machine server --repository api \
   --exclude "*.log" \
   --exclude "*.tmp" \
   --exclude "__pycache__" \
@@ -68,7 +68,7 @@ rediacc-sync upload --local ./app --machine server --repo api \
 
 # Using exclude file
 echo -e "*.log\n*.tmp\n__pycache__\nnode_modules" > .syncignore
-rediacc-sync upload --local ./app --machine server --repo api \
+rediacc-sync upload --local ./app --machine server --repository api \
   --exclude-from .syncignore
 ```
 
@@ -78,7 +78,7 @@ Verify file integrity after transfer:
 
 ```bash
 # Download with verification
-rediacc-sync download --machine prod --repo database-backup \
+rediacc-sync download --machine prod --repository database-backup \
   --local ./backups/latest --verify
 
 # Verification checks:
@@ -94,11 +94,11 @@ rediacc-sync download --machine prod --repo database-backup \
 ```bash
 # Build and deploy frontend
 npm run build
-rediacc-sync upload --local ./dist --machine prod --repo webapp \
+rediacc-sync upload --local ./dist --machine prod --repository webapp \
   --mirror --exclude ".DS_Store" --confirm
 
 # Deploy backend with dependencies
-rediacc-sync upload --local ./backend --machine prod --repo api \
+rediacc-sync upload --local ./backend --machine prod --repository api \
   --exclude "__pycache__" --exclude "*.pyc" --exclude ".env"
 ```
 
@@ -109,7 +109,7 @@ rediacc-sync upload --local ./backend --machine prod --repo api \
 BACKUP_DIR="./backups/$(date +%Y%m%d_%H%M%S)"
 mkdir -p "$BACKUP_DIR"
 
-rediacc-sync download --machine prod --repo database \
+rediacc-sync download --machine prod --repository database \
   --local "$BACKUP_DIR" --verify
 ```
 
@@ -117,11 +117,11 @@ rediacc-sync download --machine prod --repo database \
 
 ```bash
 # Push changes to dev server
-rediacc-sync upload --local ./src --machine dev --repo myapp \
+rediacc-sync upload --local ./src --machine dev --repository myapp \
   --exclude ".git" --exclude "*.swp"
 
 # Pull latest changes
-rediacc-sync download --machine dev --repo myapp \
+rediacc-sync download --machine dev --repository myapp \
   --local ./src --exclude ".git"
 ```
 
@@ -129,12 +129,12 @@ rediacc-sync download --machine dev --repo myapp \
 
 ```bash
 # Download from old machine
-rediacc-sync download --machine old-server --repo app-data \
+rediacc-sync download --machine old-server --repository app-data \
   --local ./migration-temp --verify
 
 # Upload to new machine
 rediacc-sync upload --local ./migration-temp \
-  --machine new-server --repo app-data --verify
+  --machine new-server --repository app-data --verify
 ```
 
 ## Performance Tips
@@ -167,8 +167,8 @@ Always exclude:
 # Sync multiple repos efficiently
 REPOS=("frontend" "backend" "scripts")
 for repo in "${REPOS[@]}"; do
-  echo "Syncing $repo..."
-  rediacc-sync upload --local ./$repo --machine prod --repo $repo
+  echo "Syncing $repository..."
+  rediacc-sync upload --local ./$repository --machine prod --repository $repository
 done
 ```
 
@@ -209,7 +209,7 @@ Enable verbose output for troubleshooting:
 export REDIACC_VERBOSE=1
 
 # Run sync command
-rediacc-sync upload --local ./test --machine server --repo test
+rediacc-sync upload --local ./test --machine server --repository test
 ```
 
 ## Security Considerations
@@ -233,7 +233,7 @@ rediacc-sync upload --local ./test --machine server --repo test
 1. **Always Preview Changes**
    ```bash
    # Use --confirm to preview
-   rediacc-sync upload --local ./app --machine prod --repo webapp \
+   rediacc-sync upload --local ./app --machine prod --repository webapp \
      --mirror --confirm
    ```
 
@@ -252,7 +252,7 @@ rediacc-sync upload --local ./test --machine server --repo test
 3. **Verify Important Transfers**
    ```bash
    # Always verify critical data
-   rediacc-sync download --machine backup --repo critical-data \
+   rediacc-sync download --machine backup --repository critical-data \
      --local ./restore --verify
    ```
 

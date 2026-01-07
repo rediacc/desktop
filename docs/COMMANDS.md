@@ -220,7 +220,7 @@ rediacc config list
 ### Upload
 
 ```bash
-rediacc-sync upload --local PATH --machine MACHINE --repo REPO [OPTIONS]
+rediacc-sync upload --local PATH --machine MACHINE --repository REPOSITORY [OPTIONS]
 
 Options:
   --team TEAM              # Team name (default: from config)
@@ -234,7 +234,7 @@ Options:
 ### Download
 
 ```bash
-rediacc-sync download --machine MACHINE --repo REPO --local PATH [OPTIONS]
+rediacc-sync download --machine MACHINE --repository REPOSITORY --local PATH [OPTIONS]
 
 Options:
   --team TEAM              # Team name (default: from config)
@@ -250,14 +250,14 @@ Options:
 
 ```bash
 # Basic upload
-rediacc-sync upload --local ./myapp --machine server --repo webapp
+rediacc-sync upload --local ./myapp --machine server --repository webapp
 
 # Mirror with exclusions
-rediacc-sync upload --local ./src --machine dev --repo code \
+rediacc-sync upload --local ./src --machine dev --repository code \
   --mirror --exclude "*.pyc" --exclude "__pycache__" --confirm
 
 # Download with verification
-rediacc-sync download --machine backup --repo data \
+rediacc-sync download --machine backup --repository data \
   --local ./restore --verify
 ```
 
@@ -270,7 +270,7 @@ rediacc-term --machine MACHINE [OPTIONS]
 
 Options:
   --team TEAM              # Team name (default: from config)
-  --repo REPO              # Repository name (optional)
+  --repository REPOSITORY              # Repository name (optional)
   --command CMD            # Execute command and exit
   --token TOKEN            # Override token
   --dev                    # Development mode
@@ -280,7 +280,7 @@ Options:
 
 ```bash
 # Access repository environment (Docker container)
-rediacc-term --machine server --repo webapp
+rediacc-term --machine server --repository webapp
 
 # Access machine directly (universal user)
 rediacc-term --machine server
@@ -289,21 +289,21 @@ rediacc-term --machine server
 rediacc-term --machine server --command "docker ps"
 
 # Execute command in repository
-rediacc-term --machine server --repo webapp --command "npm list"
+rediacc-term --machine server --repository webapp --command "npm list"
 ```
 
 ### Examples
 
 ```bash
 # Interactive shell in repository
-rediacc-term --machine prod --repo api
+rediacc-term --machine prod --repository api
 
 # Check logs
-rediacc-term --machine prod --repo api \
+rediacc-term --machine prod --repository api \
   --command "tail -n 100 /logs/app.log"
 
 # Restart service
-rediacc-term --machine prod --repo api \
+rediacc-term --machine prod --repository api \
   --command "docker restart api"
 ```
 
@@ -337,7 +337,7 @@ rediacc list machines --team "Development"
 ```bash
 # Upload multiple repositories
 for repo in api web worker; do
-  rediacc-sync upload --local ./$repo --machine prod --repo $repo
+  rediacc-sync upload --local ./$repository --machine prod --repository $repository
 done
 
 # Check status across machines

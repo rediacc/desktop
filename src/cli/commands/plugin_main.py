@@ -97,7 +97,7 @@ def list_plugins(args):
         universal_user = conn.connection_info.get('universal_user', 'rediacc')
         
         # Use the new plugin_socket_dir for listing sockets
-        plugin_socket_dir = conn.repo_paths.get('plugin_socket_dir', conn.repo_paths['mount_path'])
+        plugin_socket_dir = conn.repository_paths.get('plugin_socket_dir', conn.repository_paths['mount_path'])
         ssh_cmd = ['ssh', *ssh_conn.ssh_opts.split(), conn.ssh_destination,
                    f"sudo -u {universal_user} bash -c 'cd {plugin_socket_dir} && ls -la *.sock 2>/dev/null || true'"]
         
@@ -119,7 +119,7 @@ def list_plugins(args):
             if not plugins: print(colorize("  No plugin sockets found", 'YELLOW'))
             else:
                 print(colorize("\nPlugin container status:", 'BLUE'))
-                docker_cmd = f"sudo -u {universal_user} bash -c 'export DOCKER_HOST=\"unix://{conn.repo_paths['docker_socket']}\" && docker ps --format \"table {{{{.Names}}}}\\t{{{{.Image}}}}\\t{{{{.Status}}}}\" | grep plugin || true'"
+                docker_cmd = f"sudo -u {universal_user} bash -c 'export DOCKER_HOST=\"unix://{conn.repository_paths['docker_socket']}\" && docker ps --format \"table {{{{.Names}}}}\\t{{{{.Image}}}}\\t{{{{.Status}}}}\" | grep plugin || true'"
                 
                 ssh_cmd = ['ssh', *ssh_conn.ssh_opts.split(), conn.ssh_destination, docker_cmd]
                 
@@ -181,17 +181,17 @@ def connect_plugin(args):
         error_exit(f"SSH key not found for team '{args.team}'")
 
     # Use SSHTunnelConnection for persistent tunnels
-    host_entry = conn.connection_info.get('host_entry')
-    if not host_entry:
+    known_hosts = conn.connection_info.get('known_hosts')
+    if not known_hosts:
         error_exit("Security Error: No host key found in machine vault. Contact your administrator to add the host key.")
-    ssh_tunnel_conn = SSHTunnelConnection(ssh_key, host_entry)
+    ssh_tunnel_conn = SSHTunnelConnection(ssh_key, known_hosts)
     ssh_tunnel_conn.__enter__()  # Setup connection
     ssh_tunnel_conn.disable_auto_cleanup()  # Prevent auto cleanup for persistent tunnel
     
     try:
         # Verify plugin socket exists
         universal_user = conn.connection_info.get('universal_user', 'rediacc')
-        plugin_socket_dir = conn.repo_paths.get('plugin_socket_dir', conn.repo_paths['mount_path'])
+        plugin_socket_dir = conn.repository_paths.get('plugin_socket_dir', conn.repository_paths['mount_path'])
         socket_path = f"{plugin_socket_dir}/{args.plugin}.sock"
         
         check_cmd = ['ssh', *ssh_tunnel_conn.ssh_opts.split(), conn.ssh_destination,

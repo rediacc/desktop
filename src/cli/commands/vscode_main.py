@@ -264,8 +264,8 @@ def launch_vscode_repo(args):
     # Get environment variables using shared module
     env_vars = get_repository_environment(args.team, args.machine, args.repository,
                                           connection_info=conn.connection_info,
-                                          repository_paths=conn.repo_paths,
-                                          repository_info=conn.repo_info)
+                                          repository_paths=conn.repository_paths,
+                                          repository_info=conn.repository_info)
 
     # Get SSH key
     ssh_key = get_ssh_key_from_vault(args.team)
@@ -274,21 +274,21 @@ def launch_vscode_repo(args):
 
     identity_file_path = ensure_persistent_identity_file(args.team, args.machine, args.repository, ssh_key)
 
-    host_entry = conn.connection_info.get('host_entry')
-    if not host_entry:
+    known_hosts = conn.connection_info.get('known_hosts')
+    if not known_hosts:
         error_exit("Security Error: No host key found in machine vault. Contact your administrator to add the host key.")
 
-    known_hosts_file_path = ensure_persistent_known_hosts_file(args.team, args.machine, args.repository, host_entry)
+    known_hosts_file_path = ensure_persistent_known_hosts_file(args.team, args.machine, args.repository, known_hosts)
 
     port = conn.connection_info.get('port', 22)
 
-    with SSHConnection(ssh_key, host_entry, port, prefer_agent=True) as ssh_conn:
+    with SSHConnection(ssh_key, known_hosts, port, prefer_agent=True) as ssh_conn:
         # Create SSH config entry
         connection_name = f"rediacc-{sanitize_hostname(args.team)}-{sanitize_hostname(args.machine)}-{sanitize_hostname(args.repository)}"
         ssh_host = conn.connection_info['ip']
         ssh_user = conn.connection_info['user']
         ssh_port = port
-        remote_path = conn.repo_paths['mount_path']
+        remote_path = conn.repository_paths['mount_path']
 
         # Get datastore path for shared VS Code server location
         # Note: This must be calculated before ensure_vscode_env_setup so env files go to correct location
@@ -402,15 +402,15 @@ def launch_vscode_machine(args):
 
     identity_file_path = ensure_persistent_identity_file(args.team, args.machine, None, ssh_key)
 
-    host_entry = connection_info.get('host_entry')
-    if not host_entry:
+    known_hosts = connection_info.get('known_hosts')
+    if not known_hosts:
         error_exit("Security Error: No host key found in machine vault. Contact your administrator to add the host key.")
 
-    known_hosts_file_path = ensure_persistent_known_hosts_file(args.team, args.machine, None, host_entry)
+    known_hosts_file_path = ensure_persistent_known_hosts_file(args.team, args.machine, None, known_hosts)
 
     port = connection_info.get('port', 22)
 
-    with SSHConnection(ssh_key, host_entry, port, prefer_agent=True) as ssh_conn:
+    with SSHConnection(ssh_key, known_hosts, port, prefer_agent=True) as ssh_conn:
         # Create SSH config entry
         connection_name = f"rediacc-{sanitize_hostname(args.team)}-{sanitize_hostname(args.machine)}"
         ssh_host = connection_info['ip']
@@ -514,7 +514,7 @@ Environment Variables:
     DOCKER_FOLDER    - Docker configuration folder
     DOCKER_DATA      - Docker data directory
     DOCKER_EXEC      - Docker exec directory
-    REDIACC_REPO     - Repository name
+    REDIACC_REPOSITORY     - Repository name
     REDIACC_TEAM     - Team name
     REDIACC_MACHINE  - Machine name
     REDIACC_DESKTOP  - Python executable path on the desktop client

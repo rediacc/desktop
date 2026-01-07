@@ -764,8 +764,8 @@ class DualPaneFileBrowser:
                 self.ssh_connection = conn
 
                 # Get repository mount path
-                if self.ssh_connection and hasattr(self.ssh_connection, 'repo_paths') and self.ssh_connection.repo_paths:
-                    self.remote_current_path = self.ssh_connection.repo_paths['mount_path']
+                if self.ssh_connection and hasattr(self.ssh_connection, 'repository_paths') and self.ssh_connection.repository_paths:
+                    self.remote_current_path = self.ssh_connection.repository_paths['mount_path']
 
                     # DEBUG: Log the final assigned path
                     self.logger.debug(f"[FileBrowser.connect_remote] Connection established:")
@@ -773,7 +773,7 @@ class DualPaneFileBrowser:
                     self.logger.debug(f"  - Machine: {machine}")
                     self.logger.debug(f"  - Repository: {repository}")
                     self.logger.debug(f"  - Assigned mount_path: {self.remote_current_path}")
-                    self.logger.debug(f"  - repo_guid: {self.ssh_connection.repo_guid}")
+                    self.logger.debug(f"  - repository_guid: {self.ssh_connection.repository_guid}")
                 else:
                     raise Exception("Failed to get repository paths")
 
@@ -794,7 +794,7 @@ class DualPaneFileBrowser:
         info_dict = {
             'team': getattr(self.ssh_connection, 'team_name', 'Unknown'),
             'machine': getattr(self.ssh_connection, 'machine_name', 'Unknown'),
-            'repository': getattr(self.ssh_connection, 'repo_name', 'Unknown'),
+            'repository': getattr(self.ssh_connection, 'repository_name', 'Unknown'),
             'path': self.remote_current_path
         }
         self.main_window.update_connection_status(True, info_dict)
@@ -818,8 +818,8 @@ class DualPaneFileBrowser:
         """Handle failed remote connection"""
         self.main_window.update_connection_status(False)
         # Provide more specific error messages using translations
-        if "repo_paths" in error:
-            detailed_error = i18n.get('failed_retrieve_repo_info')
+        if "repository_paths" in error:
+            detailed_error = i18n.get('failed_retrieve_repository_info')
         elif "SSH" in error or "ssh" in error:
             detailed_error = i18n.get('failed_ssh_connection')
         elif "Machine IP or user not found" in error:
@@ -971,10 +971,10 @@ class DualPaneFileBrowser:
         """Handle SSH host key verification failures with security considerations"""
         self.logger.warning(f"[SSH Security] Host key verification failed: {error_msg}")
 
-        # Check if this is a first-time connection (no host_entry in vault)
-        host_entry = self.ssh_connection.connection_info.get('host_entry')
+        # Check if this is a first-time connection (no known_hosts in vault)
+        known_hosts = self.ssh_connection.connection_info.get('known_hosts')
 
-        if not host_entry:
+        if not known_hosts:
             # First-time connection - this should normally work with accept-new
             # If it's still failing, there might be a configuration issue
             return False, ("First-time SSH connection failed. This might be due to:\n"
@@ -1116,8 +1116,8 @@ class DualPaneFileBrowser:
     
     def navigate_remote_home(self):
         """Navigate to repository root in remote pane"""
-        if self.ssh_connection and hasattr(self.ssh_connection, 'repo_paths') and self.ssh_connection.repo_paths:
-            self.remote_current_path = self.ssh_connection.repo_paths['mount_path']
+        if self.ssh_connection and hasattr(self.ssh_connection, 'repository_paths') and self.ssh_connection.repository_paths:
+            self.remote_current_path = self.ssh_connection.repository_paths['mount_path']
             self.refresh_remote()
     
     def navigate_remote_to_path(self):
@@ -1129,17 +1129,17 @@ class DualPaneFileBrowser:
 
     def update_paths_tooltip(self):
         """Update the tooltip for the paths info button with all relevant paths"""
-        if hasattr(self, 'remote_paths_info_button') and self.ssh_connection and hasattr(self.ssh_connection, 'repo_paths'):
-            repo_paths = self.ssh_connection.repo_paths
+        if hasattr(self, 'remote_paths_info_button') and self.ssh_connection and hasattr(self.ssh_connection, 'repository_paths'):
+            repository_paths = self.ssh_connection.repository_paths
 
             # Build tooltip text using internationalized template
             tooltip_text = i18n.get('paths_info_tooltip').format(
-                mount_path=repo_paths.get('mount_path', 'N/A'),
-                image_path=repo_paths.get('image_path', 'N/A'),
-                docker_folder=repo_paths.get('docker_folder', 'N/A'),
-                docker_socket=repo_paths.get('docker_socket', 'N/A'),
-                runtime_base=repo_paths.get('runtime_base', 'N/A'),
-                plugin_socket_dir=repo_paths.get('plugin_socket_dir', 'N/A')
+                mount_path=repository_paths.get('mount_path', 'N/A'),
+                image_path=repository_paths.get('image_path', 'N/A'),
+                docker_folder=repository_paths.get('docker_folder', 'N/A'),
+                docker_socket=repository_paths.get('docker_socket', 'N/A'),
+                runtime_base=repository_paths.get('runtime_base', 'N/A'),
+                plugin_socket_dir=repository_paths.get('plugin_socket_dir', 'N/A')
             )
 
             # Apply tooltip to the info button
@@ -1150,22 +1150,22 @@ class DualPaneFileBrowser:
 
     def update_path_display(self):
         """Update the path display with appropriate label based on current location"""
-        if self.ssh_connection and hasattr(self.ssh_connection, 'repo_paths'):
-            repo_paths = self.ssh_connection.repo_paths
+        if self.ssh_connection and hasattr(self.ssh_connection, 'repository_paths'):
+            repository_paths = self.ssh_connection.repository_paths
             current_path = self.remote_current_path
 
             # Determine what type of path we're currently viewing
-            if current_path == repo_paths.get('mount_path'):
+            if current_path == repository_paths.get('mount_path'):
                 label = i18n.get('path_label_repository_files')
-            elif current_path == repo_paths.get('image_path'):
+            elif current_path == repository_paths.get('image_path'):
                 label = i18n.get('path_label_repository_images')
-            elif current_path == repo_paths.get('docker_folder'):
+            elif current_path == repository_paths.get('docker_folder'):
                 label = i18n.get('path_label_docker_config')
-            elif current_path.startswith(repo_paths.get('runtime_base', '')):
+            elif current_path.startswith(repository_paths.get('runtime_base', '')):
                 label = i18n.get('path_label_runtime_path')
             else:
                 # General path, try to determine relative to known paths
-                mount_path = repo_paths.get('mount_path', '')
+                mount_path = repository_paths.get('mount_path', '')
                 if mount_path and current_path.startswith(mount_path):
                     label = i18n.get('path_label_repository_files')
                 else:
@@ -1177,17 +1177,17 @@ class DualPaneFileBrowser:
 
     def copy_paths_to_clipboard(self):
         """Copy all repository paths to clipboard"""
-        if self.ssh_connection and hasattr(self.ssh_connection, 'repo_paths'):
-            repo_paths = self.ssh_connection.repo_paths
+        if self.ssh_connection and hasattr(self.ssh_connection, 'repository_paths'):
+            repository_paths = self.ssh_connection.repository_paths
 
             # Build clipboard text with all paths
             clipboard_text = "📋 Repository Paths:\n\n"
-            clipboard_text += f"📁 Repository Files:\n{repo_paths.get('mount_path', 'N/A')}\n\n"
-            clipboard_text += f"🖼️ Repository Images:\n{repo_paths.get('image_path', 'N/A')}\n\n"
-            clipboard_text += f"🐳 Docker Config:\n{repo_paths.get('docker_folder', 'N/A')}\n\n"
-            clipboard_text += f"🔌 Docker Socket:\n{repo_paths.get('docker_socket', 'N/A')}\n\n"
-            clipboard_text += f"⚡ Runtime Base:\n{repo_paths.get('runtime_base', 'N/A')}\n\n"
-            clipboard_text += f"🔧 Plugin Sockets:\n{repo_paths.get('plugin_socket_dir', 'N/A')}"
+            clipboard_text += f"📁 Repository Files:\n{repository_paths.get('mount_path', 'N/A')}\n\n"
+            clipboard_text += f"🖼️ Repository Images:\n{repository_paths.get('image_path', 'N/A')}\n\n"
+            clipboard_text += f"🐳 Docker Config:\n{repository_paths.get('docker_folder', 'N/A')}\n\n"
+            clipboard_text += f"🔌 Docker Socket:\n{repository_paths.get('docker_socket', 'N/A')}\n\n"
+            clipboard_text += f"⚡ Runtime Base:\n{repository_paths.get('runtime_base', 'N/A')}\n\n"
+            clipboard_text += f"🔧 Plugin Sockets:\n{repository_paths.get('plugin_socket_dir', 'N/A')}"
 
             # Copy to clipboard
             try:

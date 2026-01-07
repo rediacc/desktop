@@ -114,7 +114,7 @@ def camel_to_title(name):
         'storageCount': 'Storage', 'scheduleCount': 'Schedules',
         'queueCount': 'Queue Items', 'teamName': 'Team',
         'regionName': 'Region', 'bridgeName': 'Bridge',
-        'machineName': 'Machine', 'repoName': 'Repository',
+        'machineName': 'Machine', 'repositoryName': 'Repository',
         'storageName': 'Storage', 'scheduleName': 'Schedule',
         'userEmail': 'Email', 'organizationName': 'Organization',
         'hasAccess': 'Access', 'isMember': 'Member',
@@ -630,7 +630,7 @@ class CommandHandler:
                     "UpdateRepositoryName", 
                     {
                         "teamName": args.team,
-                        "currentRepoName": args.name,
+                        "currentRepositoryName": args.name,
                         "newRepoName": args.new_name
                     }
                 )
@@ -643,13 +643,13 @@ class CommandHandler:
             
             if (args.vault or args.vault_file) and success:
                 vault_data = get_vault_data(args)
-                repo_name = args.new_name if args.new_name else args.name
+                repository_name = args.new_name if args.new_name else args.name
 
                 response = self.client.token_request(
                     "UpdateRepositoryVault",
                     {
                         "teamName": args.team,
-                        "repoName": repo_name,
+                        "repositoryName": repository_name,
                         "repositoryTag": args.tag,
                         "vaultContent": vault_data,
                         "vaultVersion": args.vault_version or 1

@@ -17,7 +17,7 @@ export REDIACC_DEV_MODE=1
 rediacc-term --machine dev-server
 
 # In sync operations
-rediacc-sync upload --dev --local ./src --machine dev --repo test
+rediacc-sync upload --dev --local ./src --machine dev --repository test
 ```
 
 ### What Dev Mode Changes

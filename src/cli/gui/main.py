@@ -309,10 +309,10 @@ class MainWindow(BaseWindow):
                     result_data = json.loads(vault_status['result'])
                     if result_data.get('repositories'):
                         for repo in result_data['repositories']:
-                            repo_guid = repo.get('name')  # This is actually the GUID
-                            if repo_guid:
+                            repository_guid = repo.get('repositoryGuid')
+                            if repository_guid:
                                 repositories.append({
-                                    'guid': repo_guid,
+                                    'guid': repository_guid,
                                     'size': repo.get('size_human', 'Unknown'),
                                     'mounted': repo.get('mounted', False)
                                 })
@@ -321,14 +321,14 @@ class MainWindow(BaseWindow):
 
         return repositories
 
-    def _get_repo_name_mapping(self, team):
+    def _get_repository_name_mapping(self, team):
         """Get mapping from repository GUID to human-readable name"""
         # Cache the mapping at the instance level
-        if not hasattr(self, '_repo_name_cache'):
-            self._repo_name_cache = {}
+        if not hasattr(self, 'repository_name_cache'):
+            self.repository_name_cache = {}
 
-        if team in self._repo_name_cache:
-            return self._repo_name_cache[team]
+        if team in self.repository_name_cache:
+            return self.repository_name_cache[team]
 
         mapping = {}
         try:
@@ -336,15 +336,15 @@ class MainWindow(BaseWindow):
             if not response.get('error') and response.get('resultSets') and len(response['resultSets']) > 1:
                 repositories_data = response['resultSets'][1].get('data', [])
                 for repo in repositories_data:
-                    repo_guid = repo.get('repositoryGuid') or repo.get('repoGuid') or repo.get('grandGuid')
-                    repo_name = self._get_name(repo, 'repositoryName', 'name', 'repoName')
-                    if repo_guid and repo_name:
-                        mapping[repo_guid] = repo_name
+                    repository_guid = repo.get('repositoryGuid')
+                    repository_name = repo.get('repositoryName')
+                    if repository_guid and repository_name:
+                        mapping[repository_guid] = repository_name
         except Exception as e:
             self.logger.error(f"Failed to get repository name mapping for team {team}: {e}")
 
         # Cache the result
-        self._repo_name_cache[team] = mapping
+        self.repository_name_cache[team] = mapping
         return mapping
 
     def _map_repository_guids_to_names(self, repositories, team):
@@ -352,15 +352,17 @@ class MainWindow(BaseWindow):
         if not repositories:
             return []
 
-        name_mapping = self._get_repo_name_mapping(team)
+        name_mapping = self._get_repository_name_mapping(team)
         result = []
 
         for repo in repositories:
-            repo_guid = repo['guid']
-            human_name = name_mapping.get(repo_guid, repo_guid)  # Fallback to GUID
+            repository_guid = repo['guid']
+            repository_name = name_mapping.get(repository_guid)
+            if not repository_name:
+                continue
             result.append({
-                'name': human_name,
-                'guid': repo_guid,
+                'name': repository_name,
+                'guid': repository_guid,
                 'size': repo['size'],
                 'mounted': repo['mounted']
             })
@@ -1477,8 +1479,8 @@ class MainWindow(BaseWindow):
     def on_team_changed(self):
         """Handle team selection change"""
         # Clear repository name cache when team changes
-        if hasattr(self, '_repo_name_cache'):
-            self._repo_name_cache = {}
+        if hasattr(self, 'repository_name_cache'):
+            self.repository_name_cache = {}
 
         self.load_machines()
         # Reset plugin tracking since selection changed
@@ -1687,9 +1689,9 @@ class MainWindow(BaseWindow):
             universal_user = conn.connection_info.get('universal_user', 'rediacc')
 
             # Use the proven pattern from plugin_main.py
-            docker_cmd = f"sudo -u {universal_user} bash -c 'export DOCKER_HOST=\"unix://{conn.repo_paths['docker_socket']}\" && docker ps --format \"{{{{.Names}}}}\" 2>/dev/null || true'"
+            docker_cmd = f"sudo -u {universal_user} bash -c 'export DOCKER_HOST=\"unix://{conn.repository_paths['docker_socket']}\" && docker ps --format \"{{{{.Names}}}}\" 2>/dev/null || true'"
 
-            with SSHConnection(ssh_key, conn.connection_info.get('host_entry')) as ssh_conn:
+            with SSHConnection(ssh_key, conn.connection_info.get('known_hosts')) as ssh_conn:
                 ssh_cmd = ['ssh'] + ssh_conn.ssh_opts.split() + [conn.ssh_destination, docker_cmd]
 
                 import subprocess
@@ -1836,7 +1838,7 @@ class MainWindow(BaseWindow):
                         universal_user
                     )
 
-                    remote_path = connection.repo_paths['mount_path']
+                    remote_path = connection.repository_paths['mount_path']
                     connection_name = f"rediacc-{sanitize_hostname(team)}-{sanitize_hostname(machine)}-{sanitize_hostname(repository)}"
                     description = f"VS Code Repository: {repository} on {machine}"
 
@@ -1869,8 +1871,8 @@ class MainWindow(BaseWindow):
                     description = f"VS Code Machine: {machine}"
 
                     # Use direct SSH connection like terminal does
-                    host_entry = connection_info.get('host_entry')
-                    ssh_context = SSHConnection(ssh_key, host_entry, prefer_agent=True)
+                    known_hosts = connection_info.get('known_hosts')
+                    ssh_context = SSHConnection(ssh_key, known_hosts, prefer_agent=True)
                     ssh_host = connection_info['ip']
                     ssh_user = connection_info['user']
 
@@ -1901,8 +1903,8 @@ class MainWindow(BaseWindow):
                         # Repository connection - get repository-specific environment
                         env_vars = get_repository_environment(team, machine, repository,
                                                               connection_info=connection.connection_info,
-                                                              repository_paths=connection.repo_paths,
-                                                              repository_info=connection.repo_info)
+                                                              repository_paths=connection.repository_paths,
+                                                              repository_info=connection.repository_info)
                     else:
                         # Machine-only connection
                         env_vars = get_machine_environment(team, machine,

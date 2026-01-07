@@ -40,7 +40,7 @@ export REDIACC_TOKEN="your-api-token"
 ./rediacc --token "your-api-token" list teams
 
 # Works with all tools
-./rediacc-sync --token "your-api-token" upload --local ./files --machine server --repo data
+./rediacc-sync --token "your-api-token" upload --local ./files --machine server --repository data
 ```
 
 ## Token Priority
@@ -169,7 +169,7 @@ export REDIACC_VERBOSE=1
 # Script using environment variable
 export REDIACC_TOKEN="your-token"
 ./rediacc list teams
-./rediacc-sync upload --local ./data --machine server --repo backup
+./rediacc-sync upload --local ./data --machine server --repository backup
 ```
 
 ### CI/CD Pipeline
@@ -179,7 +179,7 @@ export REDIACC_TOKEN="your-token"
   env:
     REDIACC_TOKEN: ${{ secrets.REDIACC_TOKEN }}
   run: |
-    ./rediacc-sync upload --local ./dist --machine prod --repo webapp
+    ./rediacc-sync upload --local ./dist --machine prod --repository webapp
 ```
 
 ### Python Integration

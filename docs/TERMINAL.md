@@ -20,10 +20,10 @@ Access a specific repository's Docker environment:
 
 ```bash
 # Interactive shell in repository container
-rediacc-term --machine server --repo webapp
+rediacc-term --machine server --repository webapp
 
 # Execute command in repository
-rediacc-term --machine server --repo webapp --command "npm list"
+rediacc-term --machine server --repository webapp --command "npm list"
 ```
 
 When accessing a repository:
@@ -56,16 +56,16 @@ When accessing a machine directly:
 
 ```bash
 # Check application status
-rediacc-term --machine prod --repo api --command "npm start status"
+rediacc-term --machine prod --repository api --command "npm start status"
 
 # View logs
-rediacc-term --machine prod --repo api --command "tail -f logs/app.log"
+rediacc-term --machine prod --repository api --command "tail -f logs/app.log"
 
 # Restart service
-rediacc-term --machine prod --repo api --command "npm restart"
+rediacc-term --machine prod --repository api --command "npm restart"
 
 # Interactive debugging
-rediacc-term --machine prod --repo api
+rediacc-term --machine prod --repository api
 # Then in the shell:
 $ npm test
 $ node debug.js
@@ -110,15 +110,15 @@ rediacc-term --machine server --command "journalctl -n 100"
 
 ```bash
 # Database backup
-rediacc-term --machine db-server --repo postgres \
+rediacc-term --machine db-server --repository postgres \
   --command "pg_dump mydb > /backups/mydb_$(date +%Y%m%d).sql"
 
 # Run SQL query
-rediacc-term --machine db-server --repo postgres \
+rediacc-term --machine db-server --repository postgres \
   --command "psql -d mydb -c 'SELECT COUNT(*) FROM users;'"
 
 # Interactive database session
-rediacc-term --machine db-server --repo postgres
+rediacc-term --machine db-server --repository postgres
 $ psql -d mydb
 ```
 
@@ -136,7 +136,7 @@ DOCKER_CONTAINER   # Container name (if applicable)
 
 Example usage:
 ```bash
-rediacc-term --machine server --repo webapp
+rediacc-term --machine server --repository webapp
 $ echo $REPOSITORY_NAME  # webapp
 $ echo $REPOSITORY_PATH  # /app
 $ cd $REPOSITORY_PATH
@@ -167,11 +167,11 @@ repo-logs           # cd to logs directory
 
 ```bash
 # Run local script on remote
-cat script.sh | rediacc-term --machine server --repo app \
+cat script.sh | rediacc-term --machine server --repository app \
   --command "bash -s"
 
 # Execute remote script
-rediacc-term --machine server --repo app \
+rediacc-term --machine server --repository app \
   --command "/scripts/deploy.sh production"
 ```
 
@@ -179,11 +179,11 @@ rediacc-term --machine server --repo app \
 
 ```bash
 # Pipe local data to remote
-echo "SELECT * FROM users;" | rediacc-term --machine db --repo postgres \
+echo "SELECT * FROM users;" | rediacc-term --machine db --repository postgres \
   --command "psql -d mydb"
 
 # Pipe remote output locally
-rediacc-term --machine server --repo logs \
+rediacc-term --machine server --repository logs \
   --command "cat access.log" | grep ERROR > local-errors.log
 ```
 
@@ -193,7 +193,7 @@ Use `--dev` flag for relaxed SSH host checking (development only):
 
 ```bash
 # Useful for dynamic/temporary environments
-rediacc-term --machine dev-temp --repo test --dev
+rediacc-term --machine dev-temp --repository test --dev
 ```
 
 ## Security Considerations
@@ -271,7 +271,7 @@ Enable verbose SSH output:
 export REDIACC_VERBOSE=1
 
 # Run command with debug output
-rediacc-term --machine server --repo app
+rediacc-term --machine server --repository app
 ```
 
 ## Best Practices
@@ -280,11 +280,11 @@ rediacc-term --machine server --repo app
 
 ```bash
 # Good: Automated, repeatable
-rediacc-term --machine prod --repo api \
+rediacc-term --machine prod --repository api \
   --command "npm run health-check"
 
 # Avoid: Interactive for automation
-rediacc-term --machine prod --repo api
+rediacc-term --machine prod --repository api
 # Then manually running commands
 ```
 
@@ -294,7 +294,7 @@ rediacc-term --machine prod --repo api
 # Create audit trail
 LOGFILE="operations-$(date +%Y%m%d).log"
 echo "$(date): Restarting production API" >> $LOGFILE
-rediacc-term --machine prod --repo api \
+rediacc-term --machine prod --repository api \
   --command "docker restart api" | tee -a $LOGFILE
 ```
 
@@ -302,7 +302,7 @@ rediacc-term --machine prod --repo api \
 
 ```bash
 # Good: Repository-scoped access
-rediacc-term --machine server --repo webapp \
+rediacc-term --machine server --repository webapp \
   --command "npm install"
 
 # Avoid: Machine-level for repo operations
@@ -314,7 +314,7 @@ rediacc-term --machine server \
 
 ```bash
 # Check command success
-if rediacc-term --machine prod --repo api \
+if rediacc-term --machine prod --repository api \
      --command "npm test" > test-results.log 2>&1; then
   echo "Tests passed"
 else
@@ -332,11 +332,11 @@ fi
 - name: Deploy and Verify
   run: |
     # Run deployment
-    ./rediacc-term --machine prod --repo api \
+    ./rediacc-term --machine prod --repository api \
       --command "/scripts/deploy.sh"
     
     # Verify deployment
-    ./rediacc-term --machine prod --repo api \
+    ./rediacc-term --machine prod --repository api \
       --command "curl -f http://localhost:3000/health" || exit 1
 ```
 
@@ -349,7 +349,7 @@ fi
 SERVICES=("api" "webapp" "worker")
 for service in "${SERVICES[@]}"; do
   echo "Checking $service..."
-  if rediacc-term --machine prod --repo $service \
+  if rediacc-term --machine prod --repository $service \
        --command "curl -s http://localhost/health" | grep -q "ok"; then
     echo "✓ $service is healthy"
   else

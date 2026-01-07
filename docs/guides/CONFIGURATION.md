@@ -322,5 +322,5 @@ if [ -z "${REDIACC_TOKEN:-}" ]; then
 fi
 
 # Run deployment
-rediacc-sync upload --local ./dist --machine prod-web --repo frontend --verify
+rediacc-sync upload --local ./dist --machine prod-web --repository frontend --verify
 ```

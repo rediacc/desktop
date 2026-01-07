@@ -329,7 +329,7 @@ def get_machine_info_with_team(team_name: str, machine_name: str) -> Dict[str, A
     return machine_info
 
 
-def get_repository_info(team_name: str, repo_name: str) -> Dict[str, Any]:
+def get_repository_info(team_name: str, repository_name: str) -> Dict[str, Any]:
     from .config import get_logger
     logger = get_logger(__name__)
 
@@ -338,14 +338,14 @@ def get_repository_info(team_name: str, repo_name: str) -> Dict[str, Any]:
 
     def try_inspect(quiet: bool = False):
         with _SuppressSysExit() as ctx:
-            cmd = get_cli_command() + ['--output', 'json', 'inspect', 'repository', team_name, repo_name]
+            cmd = get_cli_command() + ['--output', 'json', 'inspect', 'repository', team_name, repository_name]
             output = run_command(cmd, quiet=quiet)
             return output, ctx.exit_called
 
     # Single attempt only, no retry
     inspect_output, exit_called = try_inspect(quiet=False)
     if not inspect_output or exit_called:
-        error_exit(f"Failed to inspect repository {repo_name}")
+        error_exit(f"Failed to inspect repository {repository_name}")
 
     try:
         inspect_data = json.loads(inspect_output)
@@ -354,21 +354,21 @@ def get_repository_info(team_name: str, repo_name: str) -> Dict[str, Any]:
 
         data_list = inspect_data.get('data', [])
         if not data_list:
-            error_exit(f"No repository data found for '{repo_name}' in team '{team_name}'")
-        repo_info = data_list[0]
+            error_exit(f"No repository data found for '{repository_name}' in team '{team_name}'")
+        repository_info = data_list[0]
 
         # DEBUG: Log the repository info to track GUID fields
-        logger.debug(f"[get_repository_info] Repository '{repo_name}' API response:")
-        logger.debug(f"  - repoGuid: {repo_info.get('repositoryGuid') or repo_info.get('repoGuid', 'NOT_FOUND')}")
-        logger.debug(f"  - grandGuid: {repo_info.get('grandGuid', 'NOT_FOUND')}")
-        logger.debug(f"  - All keys in response: {list(repo_info.keys())}")
+        logger.debug(f"[get_repository_info] Repository '{repository_name}' API response:")
+        logger.debug(f"  - repositoryGuid: {repository_info.get('repositoryGuid')}")
+        logger.debug(f"  - grandGuid: {repository_info.get('grandGuid')}")
+        logger.debug(f"  - All keys in response: {list(repository_info.keys())}")
 
-        vault_content = repo_info.get('vaultContent')
+        vault_content = repository_info.get('vaultContent')
         if vault_content:
-            try: repo_info['vault'] = json.loads(vault_content) if isinstance(vault_content, str) else vault_content
+            try: repository_info['vault'] = json.loads(vault_content) if isinstance(vault_content, str) else vault_content
             except json.JSONDecodeError: pass
 
-        return repo_info
+        return repository_info
     except json.JSONDecodeError as e:
         error_exit(f"Failed to parse JSON response: {e}")
 
@@ -413,18 +413,13 @@ def get_ssh_key_from_vault(team_name: Optional[str] = None) -> Optional[str]:
     return None
 
 def _decode_ssh_key(ssh_key: str) -> str:
-    """Decode and normalize SSH key with proper line endings for cross-platform compatibility"""
-    import base64
+    """Decode and normalize SSH key (plain text PEM)"""
 
     if not ssh_key:
         raise ValueError("SSH key is empty")
 
-    # Decode base64 if needed
-    if not ssh_key.startswith('-----BEGIN') and '\n' not in ssh_key:
-        try:
-            ssh_key = base64.b64decode(ssh_key).decode('utf-8')
-        except Exception as e:
-            raise ValueError(f"Invalid base64 SSH key: {e}")
+    if not ssh_key.startswith('-----BEGIN'):
+        raise ValueError("SSH key must be in PEM format (should start with -----BEGIN)")
 
     # Normalize line endings to Unix format (required for SSH compatibility)
     ssh_key = ssh_key.replace('\r\n', '\n').replace('\r', '\n')
@@ -443,30 +438,19 @@ def _decode_ssh_key(ssh_key: str) -> str:
 
     return ssh_key
 
-def _decode_host_entry(host_entry: str) -> str:
-    """Decode and normalize host entry for known_hosts file"""
-    import base64
+def _decode_known_hosts(known_hosts: str) -> str:
+    """Decode and normalize known_hosts entry (plain text)"""
 
-    if not host_entry:
-        return host_entry
-
-    # Decode base64 if needed
-    # Known_hosts entries typically contain spaces (e.g., "hostname ssh-rsa AAAA...")
-    # If there are no spaces and no newlines, it's likely base64 encoded
-    if ' ' not in host_entry and '\n' not in host_entry:
-        try:
-            host_entry = base64.b64decode(host_entry).decode('utf-8')
-        except Exception:
-            # If decoding fails, use as-is (might already be decoded)
-            pass
+    if not known_hosts:
+        return known_hosts
 
     # Normalize line endings to Unix format
-    host_entry = host_entry.replace('\r\n', '\n').replace('\r', '\n')
+    known_hosts = known_hosts.replace('\r\n', '\n').replace('\r', '\n')
 
     # Remove trailing newlines (we'll add one when writing to file)
-    host_entry = host_entry.rstrip('\n')
+    known_hosts = known_hosts.rstrip('\n')
 
-    return host_entry
+    return known_hosts
 
 def _convert_path_for_ssh(path: str, ssh_executable: str = None) -> str:
     """Convert Windows paths for SSH compatibility based on SSH implementation"""
@@ -499,21 +483,21 @@ def _convert_path_for_ssh(path: str, ssh_executable: str = None) -> str:
 
     return path
 
-def _setup_ssh_options(host_entry: str, known_hosts_path: str, key_path: str = None, ssh_executable: str = None, port: int = 22) -> str:
+def _setup_ssh_options(known_hosts: str, known_hosts_path: str, key_path: str = None, ssh_executable: str = None, port: int = 22) -> str:
     """Setup SSH options with strict host key verification
 
     Args:
-        host_entry: Expected host key entry from vault (REQUIRED)
+        known_hosts: Expected host key entry from vault (REQUIRED)
         known_hosts_path: Path to known_hosts file
         key_path: Optional path to SSH private key file
         ssh_executable: Optional SSH executable path for Windows compatibility
         port: SSH port number (default: 22)
 
     Raises:
-        ValueError: If host_entry is None or empty (no insecure connections allowed)
+        ValueError: If known_hosts is None or empty (no insecure connections allowed)
     """
     # Security: ALWAYS require host key from service - no exceptions
-    if not host_entry:
+    if not known_hosts:
         raise ValueError(
             "Security Error: No host key found in vault. "
             "The service MUST provide a host key for all SSH connections. "
@@ -538,16 +522,16 @@ def _setup_ssh_options(host_entry: str, known_hosts_path: str, key_path: str = N
 
     return f"{all_opts} -i {key_path}" if key_path else all_opts
 
-def setup_ssh_agent_connection(ssh_key: str, host_entry: str, port: int = 22) -> Tuple[str, str, str]:
+def setup_ssh_agent_connection(ssh_key: str, known_hosts: str, port: int = 22) -> Tuple[str, str, str]:
     """Setup SSH connection using ssh-agent with strict host key verification
 
     Args:
         ssh_key: SSH private key content
-        host_entry: Expected host key from vault (REQUIRED)
+        known_hosts: Expected host key from vault (REQUIRED)
         port: SSH port number (default: 22)
 
     Raises:
-        ValueError: If host_entry is None or empty
+        ValueError: If known_hosts is None or empty
     """
     import subprocess
 
@@ -583,27 +567,27 @@ def setup_ssh_agent_connection(ssh_key: str, host_entry: str, port: int = 22) ->
     # This allows SSH to save the host key for future verification
     known_hosts_file_path = create_temp_file(suffix='_known_hosts', prefix='known_hosts_')
 
-    if host_entry:
+    if known_hosts:
         # Decode and write the existing host entry from the vault
-        host_entry = _decode_host_entry(host_entry)
-        with open(known_hosts_file_path, 'w') as f: f.write(host_entry + '\n')
-    # If no host_entry, the file is empty but will be used to store the new host key
+        known_hosts = _decode_known_hosts(known_hosts)
+        with open(known_hosts_file_path, 'w') as f: f.write(known_hosts + '\n')
+    # If no known_hosts, the file is empty but will be used to store the new host key
 
-    ssh_opts = _setup_ssh_options(host_entry, known_hosts_file_path, port=port)
+    ssh_opts = _setup_ssh_options(known_hosts, known_hosts_file_path, port=port)
 
     return ssh_opts, agent_pid, known_hosts_file_path
 
-def setup_ssh_for_connection(ssh_key: str, host_entry: str, ssh_executable: str = None, port: int = 22) -> Tuple[str, str, str]:
+def setup_ssh_for_connection(ssh_key: str, known_hosts: str, ssh_executable: str = None, port: int = 22) -> Tuple[str, str, str]:
     """Setup SSH connection with strict host key verification
 
     Args:
         ssh_key: SSH private key content
-        host_entry: Expected host key from vault (REQUIRED)
+        known_hosts: Expected host key from vault (REQUIRED)
         ssh_executable: Optional SSH executable path for Windows compatibility
         port: SSH port number (default: 22)
 
     Raises:
-        ValueError: If host_entry is None or empty
+        ValueError: If known_hosts is None or empty
     """
     try:
         ssh_key = _decode_ssh_key(ssh_key)
@@ -648,14 +632,14 @@ def setup_ssh_for_connection(ssh_key: str, host_entry: str, ssh_executable: str 
     # Always create a known_hosts file, even for first-time connections
     # This allows SSH to save the host key for future verification
     known_hosts_file_path = create_temp_file(suffix='_known_hosts', prefix='known_hosts_')
-    if host_entry:
+    if known_hosts:
         # Decode and write the existing host entry from the vault
-        host_entry = _decode_host_entry(host_entry)
+        known_hosts = _decode_known_hosts(known_hosts)
         with open(known_hosts_file_path, 'w') as f:
-            f.write(host_entry + '\n')
-    # If no host_entry, the file is empty but will be used to store the new host key
+            f.write(known_hosts + '\n')
+    # If no known_hosts, the file is empty but will be used to store the new host key
 
-    ssh_opts = _setup_ssh_options(host_entry, known_hosts_file_path, ssh_key_file_path, ssh_executable, port)
+    ssh_opts = _setup_ssh_options(known_hosts, known_hosts_file_path, ssh_key_file_path, ssh_executable, port)
 
     return ssh_opts, ssh_key_file_path, known_hosts_file_path
 
@@ -678,25 +662,25 @@ class SSHConnection:
     Automatically cleans up resources on exit.
     """
 
-    def __init__(self, ssh_key: str, host_entry: str, port: int = 22, prefer_agent: bool = True):
+    def __init__(self, ssh_key: str, known_hosts: str, port: int = 22, prefer_agent: bool = True):
         """Initialize SSH connection context.
 
         Args:
             ssh_key: SSH private key content
-            host_entry: Host key from vault (REQUIRED for security)
+            known_hosts: Host key from vault (REQUIRED for security)
             port: SSH port number (default: 22)
             prefer_agent: Whether to try SSH agent first (default: True)
 
         Raises:
-            ValueError: If host_entry is None or empty
+            ValueError: If known_hosts is None or empty
         """
-        if not host_entry:
+        if not known_hosts:
             raise ValueError(
-                "Security Error: host_entry is required for SSH connections. "
+                "Security Error: known_hosts is required for SSH connections. "
                 "The service must provide a host key from the vault."
             )
         self.ssh_key = ssh_key
-        self.host_entry = host_entry
+        self.known_hosts = known_hosts
         self.port = port
         self.prefer_agent = prefer_agent
         self.ssh_opts = None
@@ -715,7 +699,7 @@ class SSHConnection:
             if self.prefer_agent:
                 try:
                     self.ssh_opts, self.agent_pid, self.known_hosts_file = setup_ssh_agent_connection(
-                        self.ssh_key, self.host_entry, self.port
+                        self.ssh_key, self.known_hosts, self.port
                     )
                     self._using_agent = True
                     success = True
@@ -730,7 +714,7 @@ class SSHConnection:
 
             # File-based fallback
             self.ssh_opts, self.ssh_key_file, self.known_hosts_file = setup_ssh_for_connection(
-                self.ssh_key, self.host_entry, port=self.port
+                self.ssh_key, self.known_hosts, port=self.port
             )
             success = True
             _track_ssh_operation("connection_setup", "file-based", True,
@@ -775,15 +759,15 @@ class SSHTunnelConnection(SSHConnection):
     on exit, allowing tunnels to persist. Cleanup must be done manually.
     """
 
-    def __init__(self, ssh_key: str, host_entry: str, prefer_agent: bool = True):
+    def __init__(self, ssh_key: str, known_hosts: str, prefer_agent: bool = True):
         """Initialize SSH tunnel connection context.
 
         Args:
             ssh_key: SSH private key content
-            host_entry: Host key from vault (REQUIRED for security)
+            known_hosts: Host key from vault (REQUIRED for security)
             prefer_agent: Whether to try SSH agent first (default: True)
         """
-        super().__init__(ssh_key, host_entry, prefer_agent)
+        super().__init__(ssh_key, known_hosts, prefer_agent)
         self._cleanup_on_exit = True
     
     def disable_auto_cleanup(self):
@@ -821,7 +805,7 @@ def get_machine_connection_info(machine_info: Dict[str, Any]) -> Dict[str, Any]:
     ip = vault.get('ip')
     ssh_user = vault.get('user')
     datastore = vault.get('datastore')
-    host_entry = vault.get('host_entry')
+    known_hosts = vault.get('known_hosts')  # SSH known_hosts entries
     port = vault.get('port', 22)  # Default to port 22 if not specified
 
     # DEBUG: Log machine vault info
@@ -868,28 +852,28 @@ def get_machine_connection_info(machine_info: Dict[str, Any]) -> Dict[str, Any]:
         'universal_user_id': universal_user_id,
         'datastore': datastore,
         'team': machine_info.get('teamName'),
-        'host_entry': host_entry
+        'known_hosts': known_hosts
     }
 
 
-def get_repository_paths(repo_guid: str, datastore: str, universal_user_id: str = None, organization_id: str = None) -> Dict[str, str]:
+def get_repository_paths(repository_guid: str, datastore: str, universal_user_id: str = None, organization_id: str = None) -> Dict[str, str]:
     """Calculate repository paths. universal_user_id and organization_id are kept for compatibility but no longer used in paths."""
     from .config import get_logger
     logger = get_logger(__name__)
 
     # DEBUG: Log path construction inputs
     logger.debug(f"[get_repository_paths] Constructing paths:")
-    logger.debug(f"  - repo_guid: {repo_guid}")
+    logger.debug(f"  - repository_guid: {repository_guid}")
     logger.debug(f"  - datastore: {datastore}")
 
     # Paths are now directly under datastore (no user/organization isolation)
     base_path = datastore
-    docker_base = f"{base_path}/{INTERIM_FOLDER_NAME}/{repo_guid}/docker"
+    docker_base = f"{base_path}/{INTERIM_FOLDER_NAME}/{repository_guid}/docker"
 
     logger.debug(f"  - base_path: {base_path}")
 
-    # Runtime paths are now flattened: /var/run/rediacc/{repo_guid}
-    runtime_base = f"/var/run/rediacc/{repo_guid}"
+    # Runtime paths are now flattened: /var/run/rediacc/{repository_guid}
+    runtime_base = f"/var/run/rediacc/{repository_guid}"
     runtime_paths = {
         'runtime_base': runtime_base,
         'docker_socket': f"{runtime_base}/docker.sock",
@@ -898,9 +882,9 @@ def get_repository_paths(repo_guid: str, datastore: str, universal_user_id: str 
     }
 
     paths = {
-        'mount_path': f"{base_path}/{MOUNTS_FOLDER_NAME}/{repo_guid}",
-        'image_path': f"{base_path}/{REPOSITORIES_FOLDER_NAME}/{repo_guid}",
-        'immovable_path': f"{base_path}/{IMMOVABLE_FOLDER_NAME}/{repo_guid}",
+        'mount_path': f"{base_path}/{MOUNTS_FOLDER_NAME}/{repository_guid}",
+        'image_path': f"{base_path}/{REPOSITORIES_FOLDER_NAME}/{repository_guid}",
+        'immovable_path': f"{base_path}/{IMMOVABLE_FOLDER_NAME}/{repository_guid}",
         'docker_folder': docker_base,
         'docker_socket': runtime_paths['docker_socket'],
         'docker_data': f"{docker_base}/data",
@@ -1053,7 +1037,7 @@ def test_ssh_connectivity(ip: str, port: int = 22, timeout: int = 5) -> Tuple[bo
 
     return result
 
-def validate_machine_accessibility(machine_name: str, team_name: str, ip: str, port: int = 22, repo_name: str = None):
+def validate_machine_accessibility(machine_name: str, team_name: str, ip: str, port: int = 22, repository_name: str = None):
     print(f"Testing connectivity to {ip}:{port}...")
     is_accessible, error_msg = test_ssh_connectivity(ip, port)
     if is_accessible: print(colorize("✓ Machine is accessible", 'GREEN')); return
@@ -1067,8 +1051,8 @@ def validate_machine_accessibility(machine_name: str, team_name: str, ip: str, p
     print(colorize(f"\nMachine IP: {ip}", 'BLUE'))
     print(colorize(f"Port: {port}", 'BLUE'))
     print(colorize(f"Team: {team_name}", 'BLUE'))
-    if repo_name:
-        print(colorize(f"Repository: {repo_name}", 'BLUE'))
+    if repository_name:
+        print(colorize(f"Repository: {repository_name}", 'BLUE'))
     print(colorize("\nPlease verify the machine is online and accessible from your network.", 'YELLOW'))
     wait_for_enter("Press Enter to exit...")
     sys.exit(1)  # Keep as is - this is a special user interaction case
@@ -1103,14 +1087,14 @@ def handle_ssh_exit_code(returncode, connection_type: str = "machine"):
     _track_ssh_operation("command_execution", connection_type, success, error=error)
 
 class RepositoryConnection:
-    def __init__(self, team_name: str, machine_name: str, repo_name: str):
+    def __init__(self, team_name: str, machine_name: str, repository_name: str):
         self.team_name = team_name
         self.machine_name = machine_name
-        self.repo_name = repo_name
+        self.repository_name = repository_name
         self._machine_info = None
-        self._repo_info = None
+        self._repository_info = None
         self._connection_info = None
-        self._repo_paths = None
+        self._repository_paths = None
         self._ssh_key = None
         self._ssh_key_file = None
     
@@ -1126,22 +1110,17 @@ class RepositoryConnection:
         if not all([self._connection_info.get('ip'), self._connection_info.get('user')]):
             error_exit("Machine IP or user not found in vault")
 
-        print(f"Fetching repository information for '{self.repo_name}'...")
-        self._repo_info = get_repository_info(self._connection_info['team'], self.repo_name)
+        print(f"Fetching repository information for '{self.repository_name}'...")
+        self._repository_info = get_repository_info(self._connection_info['team'], self.repository_name)
 
         # DEBUG: Log GUID selection logic
-        repo_guid_field = self._repo_info.get('repositoryGuid') or repo_info.get('repoGuid')
-        grand_guid_field = self._repo_info.get('grandGuid')
-        logger.debug(f"[RepositoryConnection.connect] GUID selection for '{self.repo_name}':")
-        logger.debug(f"  - repoGuid field: {repo_guid_field}")
-        logger.debug(f"  - grandGuid field: {grand_guid_field}")
-
-        repo_guid = repo_guid_field or grand_guid_field
-        if not repo_guid:
-            print(colorize(f"Repository info: {json.dumps(self._repo_info, indent=2)}", 'YELLOW'))
-            error_exit(f"Repository GUID not found for '{self.repo_name}'")
-
-        logger.debug(f"  - Selected GUID: {repo_guid} (from {'repositoryGuid' if repo_guid_field else 'grandGuid'})")
+        repository_guid = self._repository_info.get('repositoryGuid')
+        logger.debug(f"[RepositoryConnection.connect] GUID selection for '{self.repository_name}':")
+        logger.debug(f"  - repositoryGuid field: {repository_guid}")
+        if not repository_guid:
+            print(colorize(f"Repository info: {json.dumps(self._repository_info, indent=2)}", 'YELLOW'))
+            error_exit(f"Repository GUID not found for '{self.repository_name}'")
+        logger.debug("  - Selected GUID: %s (from repositoryGuid)", repository_guid)
 
         _, universal_user_id, organization_id = _get_universal_user_info()
 
@@ -1157,9 +1136,9 @@ class RepositoryConnection:
         if not universal_user_id:
             error_exit("Universal user ID not found. Please re-login or check your organization configuration.")
 
-        self._repo_paths = get_repository_paths(repo_guid, self._connection_info['datastore'], universal_user_id, organization_id)
+        self._repository_paths = get_repository_paths(repository_guid, self._connection_info['datastore'], universal_user_id, organization_id)
 
-        if not self._repo_paths:
+        if not self._repository_paths:
             error_exit("Failed to calculate repository paths")
 
         print("Retrieving SSH key...")
@@ -1173,8 +1152,8 @@ class RepositoryConnection:
             raise Exception(error_msg)  # Raise exception instead of sys.exit so GUI can handle it
     
     def setup_ssh(self, ssh_executable: str = None) -> Tuple[str, str, str]:
-        host_entry = self._connection_info.get('host_entry')
-        return setup_ssh_for_connection(self._ssh_key, host_entry, ssh_executable)
+        known_hosts = self._connection_info.get('known_hosts')
+        return setup_ssh_for_connection(self._ssh_key, known_hosts, ssh_executable)
     
     def cleanup_ssh(self, ssh_key_file: str, known_hosts_file: str = None):
         cleanup_ssh_key(ssh_key_file, known_hosts_file)
@@ -1188,9 +1167,9 @@ class RepositoryConnection:
         Returns:
             SSHConnection context manager
         """
-        host_entry = self._connection_info.get('host_entry')
+        known_hosts = self._connection_info.get('known_hosts')
         port = self._connection_info.get('port', 22)
-        return SSHConnection(self._ssh_key, host_entry, port, prefer_agent)
+        return SSHConnection(self._ssh_key, known_hosts, port, prefer_agent)
     
     @property
     def ssh_destination(self) -> str:
@@ -1201,17 +1180,17 @@ class RepositoryConnection:
         return self._machine_info
     
     @property
-    def repo_info(self) -> Dict[str, Any]:
-        return self._repo_info
+    def repository_info(self) -> Dict[str, Any]:
+        return self._repository_info
     
     @property
     def connection_info(self) -> Dict[str, Any]:
         return self._connection_info
     
     @property
-    def repo_paths(self) -> Dict[str, str]:
-        return self._repo_paths
+    def repository_paths(self) -> Dict[str, str]:
+        return self._repository_paths
     
     @property
-    def repo_guid(self) -> str:
-        return self._repo_info.get('repositoryGuid') or repo_info.get('repoGuid') or self._repo_info.get('grandGuid')
+    def repository_guid(self) -> str:
+        return self._repository_info.get('repositoryGuid')

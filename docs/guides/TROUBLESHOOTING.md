@@ -206,7 +206,7 @@ rsync: mkstemp "/path/.file.XXXXXX" failed: Permission denied
 1. Check remote directory permissions
 2. Verify repository exists:
    ```bash
-   rediacc-term --machine server --repo myrepo --command "ls -la"
+   rediacc-term --machine server --repository myrepo --command "ls -la"
    ```
 
 ### API Errors
@@ -268,7 +268,7 @@ The system cannot find the path specified
 **Solution:**
 Use quotes for paths with spaces:
 ```powershell
-rediacc.bat sync upload --local "C:\My Documents\project" --machine server --repo data
+rediacc.bat sync upload --local "C:\My Documents\project" --machine server --repository data
 ```
 
 #### MSYS2 Not Found

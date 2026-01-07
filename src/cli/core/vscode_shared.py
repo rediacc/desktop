@@ -23,7 +23,7 @@ import stat
 import platform
 import subprocess
 
-from cli.core.shared import _decode_ssh_key, _decode_host_entry, is_windows
+from cli.core.shared import _decode_ssh_key, _decode_known_hosts, is_windows
 
 
 def get_vscode_settings_path():
@@ -292,7 +292,7 @@ def ensure_persistent_identity_file(team: str, machine: str, repository: str, ss
     return key_path.replace('\\', '/')
 
 
-def ensure_persistent_known_hosts_file(team: str, machine: str, repository: str, host_entry: str) -> str:
+def ensure_persistent_known_hosts_file(team: str, machine: str, repository: str, known_hosts: str) -> str:
     """
     Persist the host key for VS Code connections and return config-safe path.
     Creates a persistent known_hosts file in ~/.ssh/ with appropriate permissions.
@@ -310,7 +310,7 @@ def ensure_persistent_known_hosts_file(team: str, machine: str, repository: str,
     known_hosts_filename = f"rediacc_{'_'.join(parts)}_known_hosts"
     known_hosts_path = os.path.join(ssh_dir, known_hosts_filename)
 
-    decoded_host_entry = _decode_host_entry(host_entry)
+    decoded_known_hosts = _decode_known_hosts(known_hosts)
 
     existing_content = None
     try:
@@ -319,9 +319,9 @@ def ensure_persistent_known_hosts_file(team: str, machine: str, repository: str,
     except FileNotFoundError:
         existing_content = None
 
-    if existing_content != decoded_host_entry:
+    if existing_content != decoded_known_hosts:
         with open(known_hosts_path, 'w', newline='\n', encoding='utf-8') as kh_file:
-            kh_file.write(decoded_host_entry + '\n')
+            kh_file.write(decoded_known_hosts + '\n')
 
     try:
         os.chmod(known_hosts_path, 0o644)

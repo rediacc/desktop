@@ -311,7 +311,7 @@
               "example": "",
               "type": "string"
             },
-            "repo_guid": {
+            "repository_guid": {
               "description": "",
               "required": true,
               "example": "",
@@ -941,7 +941,7 @@
               "description": "List all repositories in dev-team"
             },
             {
-              "command": "rediacc list team-repositories prod --output json | jq '.[].repoName'",
+              "command": "rediacc list team-repositories prod --output json | jq '.[].repositoryName'",
               "description": "Extract repository names from production team"
             }
           ],
@@ -1687,7 +1687,7 @@
               "required": true,
               "example": "dev-team"
             },
-            "current_repo_name": {
+            "current_repository_name": {
               "description": "",
               "required": true,
               "example": ""
@@ -4018,7 +4018,7 @@
               "example": "",
               "type": "string"
             },
-            "repo_name": {
+            "repository_name": {
               "description": "",
               "required": true,
               "example": "",
@@ -4447,7 +4447,7 @@
               "example": "",
               "type": "string"
             },
-            "repo_name": {
+            "repository_name": {
               "description": "",
               "required": true,
               "example": "",
