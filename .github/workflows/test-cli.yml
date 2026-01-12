@@ -92,7 +92,7 @@ jobs:
         with:
           name: tunnel-url
           path: tunnel-url.txt
-          retention-days: 1
+          retention-days: 3
 
       - name: Keep Backend Alive - Wait for test completion signals
         if: always()
@@ -254,7 +254,7 @@ jobs:
         with:
           name: ci-outputs-linux-py${{ matrix.python }}
           path: ci-outputs/
-          retention-days: 30
+          retention-days: 3
 
       - name: Upload Screenshots
         if: always()
@@ -262,7 +262,7 @@ jobs:
         with:
           name: screenshots-linux-py${{ matrix.python }}
           path: test-screenshots/
-          retention-days: 30
+          retention-days: 3
           if-no-files-found: ignore
 
       - name: Signal Completion (Linux)
@@ -275,7 +275,7 @@ jobs:
         with:
           name: test-complete-linux
           path: test-complete-linux.txt
-          retention-days: 1
+          retention-days: 3
 
   # Windows tests - now parallel with Linux
   test-windows:
@@ -372,7 +372,7 @@ jobs:
         with:
           name: ci-outputs-windows-py${{ matrix.python }}
           path: ci-outputs/
-          retention-days: 30
+          retention-days: 3
 
       - name: Upload Screenshots
         if: always()
@@ -380,7 +380,7 @@ jobs:
         with:
           name: screenshots-windows-py${{ matrix.python }}
           path: test-screenshots/
-          retention-days: 30
+          retention-days: 3
           if-no-files-found: ignore
 
       - name: Signal Completion (Windows)
@@ -394,7 +394,7 @@ jobs:
         with:
           name: test-complete-windows
           path: test-complete-windows.txt
-          retention-days: 1
+          retention-days: 3
 
   # macOS tests - now parallel with Linux and Windows
   test-macos:
@@ -477,7 +477,7 @@ jobs:
         with:
           name: ci-outputs-macos-py${{ matrix.python }}
           path: ci-outputs/
-          retention-days: 30
+          retention-days: 3
 
       - name: Upload Screenshots
         if: always()
@@ -485,7 +485,7 @@ jobs:
         with:
           name: screenshots-macos-py${{ matrix.python }}
           path: test-screenshots/
-          retention-days: 30
+          retention-days: 3
           if-no-files-found: ignore
 
       - name: Signal Completion (macOS)
@@ -498,7 +498,7 @@ jobs:
         with:
           name: test-complete-macos
           path: test-complete-macos.txt
-          retention-days: 1
+          retention-days: 3
 
   # Code quality checks
   code-quality:
@@ -592,4 +592,4 @@ jobs:
         with:
           name: python-packages-${{ github.sha }}
           path: dist/
-          retention-days: 90
+          retention-days: 3
